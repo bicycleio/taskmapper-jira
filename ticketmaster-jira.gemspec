@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 $:.push File.expand_path("../lib", __FILE__)
-require 'lib/jira/version'
+require './lib/jira/version'
 
 Gem::Specification.new do |s|
   s.name          = 'ticketmaster-jira'
