@@ -1,6 +1,6 @@
 source :rubygems
 
-gem 'ticketmaster', "0.6.10"
+gem 'ticketmaster', "~> 0.7.0"
 gem 'jira4r-jh', "~> 0.4"
 
 group :test, :development do
