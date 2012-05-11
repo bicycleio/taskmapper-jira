@@ -1,4 +1,3 @@
-require 'ticketmaster'
 require 'jira4r/jira_tool'
 
 %w{ jira ticket project comment }.each do |f|

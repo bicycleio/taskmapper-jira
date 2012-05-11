@@ -1,5 +1,6 @@
 $:.unshift(File.expand_path(File.dirname(__FILE__) + '/../lib'))
-require 'ticketmaster-jira'
+require 'taskmapper'
+require 'taskmapper-jira'
 require 'rspec/expectations'
 
 class FakeJiraTool

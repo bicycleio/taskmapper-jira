@@ -1,11 +1,11 @@
-module TicketMaster::Provider
+module TaskMapper::Provider
   module Jira
-    # The comment class for ticketmaster-jira
+    # The comment class for taskmapper-jira
     #
-    # Do any mapping between Ticketmaster and your system's comment model here
+    # Do any mapping between taskmapper and your system's comment model here
     # versions of the ticket.
     #
-    class Comment < TicketMaster::Provider::Base::Comment
+    class Comment < TaskMapper::Provider::Base::Comment
       #API = Jira::Comment # The class to access the api's comments
       # declare needed overloaded methods here
       

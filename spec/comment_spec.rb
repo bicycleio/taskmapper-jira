@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe "TicketMaster::Provider::Jira::Comment" do
+describe TaskMapper::Provider::Jira::Comment do
   before(:each) do
     @url = "some_url"
     @fj = FakeJiraTool.new
@@ -25,9 +25,9 @@ describe "TicketMaster::Provider::Jira::Comment" do
     @fj.stub!(:getProjectById).and_return(@project_jira)
     @fj.stub!(:getIssuesFromJqlSearch).and_return([@ticket])
     @fj.stub!(:getComments).and_return([@comment])
-    @tm = TicketMaster.new(:jira, :username => 'testuser', :password => 'testuser', :url => @url)
+    @tm = TaskMapper.new(:jira, :username => 'testuser', :password => 'testuser', :url => @url)
     @ticket = @tm.projects.first.tickets.first
-    @klass = TicketMaster::Provider::Jira::Comment
+    @klass = TaskMapper::Provider::Jira::Comment
   end
 
   it "should be able to load all comments" do 

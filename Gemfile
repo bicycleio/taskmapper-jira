@@ -1,6 +1,6 @@
 source :rubygems
 
-gem 'ticketmaster', "0.6.10"
+gem 'taskmapper', "~> 0.8"
 gem 'jira4r-jh', "~> 0.4"
 
 group :test, :development do

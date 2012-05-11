@@ -1,9 +1,9 @@
-module TicketMaster::Provider
+module TaskMapper::Provider
   module Jira
-    # Ticket class for ticketmaster-jira
+    # Ticket class for taskmapper-jira
     #
     
-    class Ticket < TicketMaster::Provider::Base::Ticket
+    class Ticket < TaskMapper::Provider::Base::Ticket
       #API = Jira::Ticket # The class to access the api's tickets
       # declare needed overloaded methods here
       def initialize(*object)

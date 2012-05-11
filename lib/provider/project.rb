@@ -1,9 +1,9 @@
-module TicketMaster::Provider
+module TaskMapper::Provider
   module Jira
-    # Project class for ticketmaster-jira
+    # Project class for taskmapper-jira
     #
     #
-    class Project < TicketMaster::Provider::Base::Project
+    class Project < TaskMapper::Provider::Base::Project
       #API = Jira::Project # The class to access the api's projects
       # declare needed overloaded methods here
       # copy from this.copy(that) copies that into this
