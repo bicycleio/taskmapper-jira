@@ -1,7 +1,7 @@
 source :rubygems
 
 gem 'taskmapper', "~> 0.8"
-gem 'jira4r-jh', "~> 0.4"
+gem 'jira4r-jh-ruby1.9', "~> 0.4"
 
 group :test, :development do
   gem "rspec", "~> 2.8"

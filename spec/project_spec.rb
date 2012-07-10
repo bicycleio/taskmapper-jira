@@ -1,10 +1,18 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe TaskMapper::Provider::Jira::Project do 
+
+  let(:tm) { TaskMapper.new(:jira, :username => 'testuser', :password => 'testuser', :url => 'http://testing.jira.com') }
+  let(:project_class) { TaskMapper::Provider::Jira::Project }
   before(:each) do
-    @url = "some_url"
-    @tm = TaskMapper.new(:jira, :username => 'testuser', :password => 'testuser', :url => @url)
+    @tm = TaskMapper.new(:jira, :username => 'testuser', :password => 'testuser', :url => 'http://testing.jira.com') 
     @klass = TaskMapper::Provider::Jira::Project
+  end
+
+  describe "Retrieving projects" do 
+    context "when #projects" do 
+      subject { tm.projects } 
+    end
   end
 
   it "should be able to load all projects" do
