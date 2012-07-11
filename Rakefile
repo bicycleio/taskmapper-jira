@@ -1,10 +1,8 @@
-require 'bundler/setup'
-Bundler::GemHelper.install_tasks
+require 'bundler/gem_tasks'
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new
 
 task :default => :spec
-
-desc "run specs"
-task :spec do
-  sh "bundle exec rspec --color spec/"
-end
+task :test => :spec
 
