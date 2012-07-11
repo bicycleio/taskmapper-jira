@@ -7,7 +7,6 @@ describe TaskMapper::Provider::Jira::Project do
 
   describe "Retrieving projects" do 
     before(:each) do 
-      stub_post 'http://jira.atlassian.com/rpc/soap/jirasoapservice-v2', 'projects.xml'
     end
 
     context "when #projects" do 
