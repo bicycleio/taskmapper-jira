@@ -46,6 +46,18 @@ describe TaskMapper::Provider::Jira::Ticket do
       subject { project_from_tm.tickets :id => ticket_id } 
       it { should be_an_instance_of Array }
     end
+
+    describe "Retrieve a single ticket" do 
+      context "when #ticket with id" do 
+        subject { project_from_tm.ticket ticket_id } 
+        it { should be_an_instance_of ticket_class }
+      end
+
+      context "when #ticket with attribute" do 
+        subject { project_from_tm.ticket :id => ticket_id } 
+        it { should be_an_instance_of ticket_class }
+      end
+    end
   end
 
 end
