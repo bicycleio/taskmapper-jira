@@ -38,18 +38,6 @@ module TaskMapper::Provider
         end
       end
 
-      def self.find(*options)
-        if options[0].first.is_a? Array
-          self.find_all.select do |project| 
-            project if options.first.any? { |id| project.id == id }
-          end
-        elsif options[0].first.is_a? Hash
-          find_by_attributes(options[0].first)
-        else
-          self.find_all
-        end
-      end
-
       def self.find_by_attributes(attributes = {})
         search_by_attribute(self.find_all, attributes)
       end

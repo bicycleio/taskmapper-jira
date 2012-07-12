@@ -37,10 +37,6 @@ module TaskMapper::Provider
       end
     end
 
-    def projects(*options)
-      Project.find(options)
-    end
-
     def valid?
       @valid_auth
     end
