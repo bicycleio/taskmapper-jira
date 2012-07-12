@@ -1,11 +1,11 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe TaskMapper::Provider::Jira::Ticket do 
-  before(:each) do
-    @url = "some_url"
-    @fj = FakeJiraTool.new
-    @project_jira = Struct.new(:id, :name, :description).new(1, 'project', 'project description')
-    @ticket = Struct.new(:id, 
+  let(:url) { 'http://jira.atlassian.com' }
+  let(:fake_jira) { FakeJiraTool.new } 
+  let(:project_from_jira) { Struct.new(:id, :name, :description).new(1, 'project', 'project description') }
+  let(:ticket_from_jira) do 
+               Struct.new(:id, 
                          :status, 
                          :priority, 
                          :summary, 
@@ -13,37 +13,39 @@ describe TaskMapper::Provider::Jira::Ticket do
                          :created, 
                          :updated, 
                          :description, :assignee, :reporter).new(1,'open','high', 'ticket 1', 'none', Time.now, Time.now, 'description', 'myself', 'yourself')
-    Jira4R::JiraTool.stub!(:new).with(2, @url).and_return(@fj)
-    @fj.stub!(:getProjectsNoSchemes).and_return([@project_jira, @project_jira])
-    @fj.stub!(:getProjectById).and_return(@project_jira)
-    @fj.stub!(:getIssuesFromJqlSearch).and_return([@ticket])
-    @tm = TaskMapper.new(:jira, :username => 'testuser', :password => 'testuser', :url => @url)
-    @project_tm = @tm.projects.first
-    @klass = TaskMapper::Provider::Jira::Ticket
+  end
+  let(:tm) {  TaskMapper.new(:jira, :username => 'testuser', :password => 'testuser', :url => url) }
+  let(:ticket_class) { TaskMapper::Provider::Jira::Ticket }
+  let(:project_from_tm) { tm.project 1 }
+  let(:ticket_id) { 1 }
+    
+  before(:each) do
+    Jira4R::JiraTool.stub!(:new).with(2, url).and_return(fake_jira)
+    fake_jira.stub!(:getProjectsNoSchemes).and_return([project_from_jira, project_from_jira])
+    fake_jira.stub!(:getProjectById).and_return(project_from_jira)
+    fake_jira.stub!(:getIssuesFromJqlSearch).and_return([ticket_from_jira])
   end
 
-  it "should be able to load all tickets"  do 
-     @project_tm.tickets.should be_an_instance_of(Array)
-     @project_tm.tickets.first.should be_an_instance_of(@klass)
-  end
+  describe "Retrieving tickets" do 
+    context "when #tickets" do 
+      subject { project_from_tm.tickets } 
+      it { should be_an_instance_of Array }
 
-  it "should be able to load all tickets based on array of id's" do
-    tickets = @project_tm.tickets([1])
-    tickets.should be_an_instance_of(Array)
-    tickets.first.should be_an_instance_of(@klass)
-    tickets.first.id.should == 1
-  end
+      context "when #tickets.first" do 
+        subject { project_from_tm.tickets.first } 
+        it { should be_an_instance_of ticket_class }
+      end
+    end
 
-  it "should be able to load a single ticket based on id" do 
-    ticket = @project_tm.ticket(1)
-    ticket.should be_an_instance_of(@klass)
-    ticket.id.should == 1
-  end
+    context "when #tickets with array of id's" do 
+      subject { project_from_tm.tickets [ticket_id] } 
+      it { should be_an_instance_of Array }
+    end
 
-  it "should be able to load a single ticket based on attributes" do
-    ticket = @project_tm.ticket(:id => 1)
-    ticket.should be_an_instance_of(@klass)
-    ticket.id.should == 1
+    context "when #tickets with attributes" do 
+      subject { project_from_tm.tickets :id => ticket_id } 
+      it { should be_an_instance_of Array }
+    end
   end
 
 end
