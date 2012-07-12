@@ -45,7 +45,7 @@ module TaskMapper::Provider
       end
 
       def self.find_by_id(project_id, id)
-        self.find_all(project_id).select { |ticket| ticket.id == id }.first
+        self.find_all(project_id).find { |ticket| ticket.id == id }
       end
 
       def self.find_all(project_id)
