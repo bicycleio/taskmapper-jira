@@ -54,10 +54,6 @@ module TaskMapper::Provider
         end
       end
 
-      def comments(*options)
-        Comment.find(self.id, options)
-      end
-
       def comment(*options)
         nil
       end
