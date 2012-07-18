@@ -12,7 +12,7 @@ describe TaskMapper::Provider::Jira::Project do
 
     context "when #projects" do 
       subject { tm.projects } 
-      it { should be_an_instance_of Array }
+      pending { should be_an_instance_of Array }
     end
   end
 
