@@ -45,17 +45,13 @@ module TaskMapper::Provider
       end
 
       def self.find_by_id(project_id, id)
-        self.find_all(project_id).select { |ticket| ticket.id == id }.first
+        self.find_all(project_id).find { |ticket| ticket.id == id }
       end
 
       def self.find_all(project_id)
         $jira.getIssuesFromJqlSearch("project = #{project_id}", 200).map do |ticket|
           self.new ticket
         end
-      end
-
-      def comments(*options)
-        Comment.find(self.id, options)
       end
 
       def comment(*options)

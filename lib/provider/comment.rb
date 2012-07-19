@@ -28,18 +28,20 @@ module TaskMapper::Provider
         end
       end
 
-      def self.find(ticket_id, *options)
-        if options.first.empty?
-          self.find_all(ticket_id)
-        end
-      end
-
       def self.find_all(ticket_id)
         begin 
           $jira.getComments("#{ticket_id}").map { |comment| self.new comment }
         rescue
           []
         end
+      end
+
+      def self.find_by_attributes(project_id, ticket_id, attributes = {}) 
+        search_by_attribute(self.find_all(ticket_id), attributes)
+      end
+
+      def self.find_by_id(project_id, ticket_id, id) 
+        self.find_all(ticket_id).find { |comment| comment.id == id }
       end
     end
   end
