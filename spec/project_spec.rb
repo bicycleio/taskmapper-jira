@@ -2,22 +2,25 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe TaskMapper::Provider::Jira::Project do 
 
-  let(:backend_url) { 'http://jira.atlassian.com' }
-  let(:tm) { TaskMapper.new(:jira, :username => 'soaptester', :password => 'soaptester', :url => backend_url) }
-  let(:fake_jira) { FakeJiraTool.new }
-  let(:returned_project) { Struct.new(:id, :name, :description).new(1, 'project', 'project description') }
+  let(:backend_url) { 'http://sampleserver' }
+
+  let(:tm) { TaskMapper.new(:jira, :username => 'tester', :password => 'secret', :url => backend_url) }
+
+  let(:mock_project) { create_project(project_id, 'project name', 'description') }
+
+  let(:fakejira) { create_jira([mock_project]) }
+
+  let(:project_id) { 'PRO' }
   let(:project_class) { TaskMapper::Provider::Jira::Project }
-  let(:project_id) { 1 }
+
   before(:each) do
-    Jira4R::JiraTool.stub!(:new).with(2, backend_url).and_return(fake_jira)
-    fake_jira.stub!(:getProjectsNoSchemes).and_return([returned_project, returned_project])
-    fake_jira.stub!(:getProjectByKey).and_return(returned_project)
+    override_jira('tester', 'secret', backend_url, fakejira)
   end
 
   describe "Retrieving projects" do 
     context "when #projects" do 
       subject { tm.projects } 
-      pending { should be_an_instance_of Array }
+      it { should be_an_instance_of Array }
     end
 
     context "when #projects with array of id's" do 
@@ -38,7 +41,9 @@ describe TaskMapper::Provider::Jira::Project do
         context "when #project.name" do 
           subject { tm.project(project_id).name } 
           it { should_not be_nil } 
-          it { should be_eql('project') } 
+          it {
+            should be_eql('project name')
+          }
         end
       end
 

@@ -6,6 +6,7 @@ module TaskMapper::Provider
     # versions of the ticket.
     #
     class Comment < TaskMapper::Provider::Base::Comment
+      extend TaskMapper::Provider::JiraAccessor
       #API = Jira::Comment # The class to access the api's comments
       # declare needed overloaded methods here
       
@@ -30,7 +31,8 @@ module TaskMapper::Provider
 
       def self.find_all(ticket_id)
         begin 
-          $jira.getComments("#{ticket_id}").map { |comment| self.new comment }
+          issue = jira_client.Issue.find(ticket_id)
+          issue.comments.map { |comment| self.new comment }
         rescue
           []
         end

@@ -4,6 +4,8 @@ module TaskMapper::Provider
     #
     
     class Ticket < TaskMapper::Provider::Base::Ticket
+      extend TaskMapper::Provider::JiraAccessor
+
       #API = Jira::Ticket # The class to access the api's tickets
       # declare needed overloaded methods here
       def initialize(*object)
@@ -11,7 +13,7 @@ module TaskMapper::Provider
           object = object.first
           unless object.is_a? Hash
             @system_data = {:client => object}
-            hash = {:id => object.id.to_i, 
+            hash = {:id => object.key,
               :status => object.status,
               :priority => object.priority,
               :title => object.summary,
@@ -26,10 +28,6 @@ module TaskMapper::Provider
           end
           super(hash)
         end
-      end
-
-      def id
-        self[:id].to_i
       end
 
       def updated_at
@@ -49,7 +47,10 @@ module TaskMapper::Provider
       end
 
       def self.find_all(project_id)
-        $jira.getIssuesFromJqlSearch("project = #{project_id}", 200).map do |ticket|
+        project = jira_client.Project.find(project_id)
+
+        project.issues.map do |ticket|
+          ticket.fetch
           self.new ticket
         end
       end

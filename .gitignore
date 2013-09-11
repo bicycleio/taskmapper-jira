@@ -2,3 +2,6 @@
 pkg/*
 *.un~
 *.swp
+
+.idea
+*.iml

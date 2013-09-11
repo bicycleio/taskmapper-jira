@@ -4,6 +4,7 @@ module TaskMapper::Provider
     #
     #
     class Project < TaskMapper::Provider::Base::Project
+      extend TaskMapper::Provider::JiraAccessor
       #API = Jira::Project # The class to access the api's projects
       # declare needed overloaded methods here
       # copy from this.copy(that) copies that into this
@@ -12,7 +13,7 @@ module TaskMapper::Provider
           object = object.first
           unless object.is_a? Hash
             @system_data = {:client => object}
-            hash = {:id => object.id.to_i, 
+            hash = {:id => object.key,
                     :name => object.name,
                     :description => object.description,
                     :updated_at => nil,
@@ -22,10 +23,6 @@ module TaskMapper::Provider
           end
           super(hash)
         end
-      end
-
-      def id
-        self[:id].to_i
       end
 
       def copy(project)
@@ -43,13 +40,15 @@ module TaskMapper::Provider
       end
 
       def self.find_all
-        $jira.getProjectsNoSchemes().map do |project| 
-          Project.new project 
-        end
+        jira_client.Project.all.map { |project|
+          project.fetch
+          Project.new project
+        }
       end
 
       def self.find_by_id(id)
-        self.find_all.select { |project| project.id == id }.first
+        project = jira_client.Project.find(id)
+        Project.new project unless project.nil?
       end
 
     end

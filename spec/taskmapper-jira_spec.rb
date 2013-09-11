@@ -2,9 +2,23 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "TaskMapper::Provider::Jira" do 
   before(:each) do
-    @url = "some_url"
-    @fj = FakeJiraTool.new
-    Jira4R::JiraTool.stub!(:new).with(2, @url).and_return(@fj)
+    @url = "https://someurl:8090/myjira"
+    @mockJira = double('JiraClient')
+
+    mockProject = double("Project")
+    mockProject.stub(:all)
+
+    @mockJira.stub(:Project).and_return(mockProject)
+
+    JIRA::Client.stub(:new).with({
+        :username => 'testing',
+        :password => 'testing',
+        :site => 'https://someurl:8090',
+        :context_path => '/myjira',
+        :auth_type => :basic,
+        :use_ssl => true
+    }).and_return(@mockJira)
+
     @tm = TaskMapper.new(:jira, :username => 'testing', :password => 'testing', :url => @url)
   end
 
