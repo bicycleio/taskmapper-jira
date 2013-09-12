@@ -45,6 +45,11 @@ describe TaskMapper::Provider::Jira::Ticket do
         subject { project_from_tm.ticket :id => ticket_id } 
         it { should be_an_instance_of ticket_class }
       end
+
+      context 'Ticket Normalization' do
+        subject { project_from_tm.ticket(:id => ticket_id).status }
+        it { should == 'open' }
+      end
     end
   end
 

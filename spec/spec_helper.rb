@@ -47,7 +47,7 @@ def create_project(id, name, description, tickets = [])
   project
 end
 
-def create_ticket(key)
+def create_ticket(key, status='open')
 
   ticket = Struct.new(:key,
                       :status,
@@ -57,7 +57,16 @@ def create_ticket(key)
                       :created,
                       :updated,
                       :description, :assignee, :reporter)
-  .new(key, 'open', 'high', 'ticket 1', 'none', Time.now, Time.now, 'description', 'myself', 'yourself')
+  .new(key,
+       {:name => status},
+       'high',
+       'ticket 1',
+       'none',
+       Time.now,
+       Time.now,
+       'description',
+       'myself',
+       'yourself')
 
   ticket.stub(:fetch)
 

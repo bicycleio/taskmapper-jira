@@ -38,6 +38,10 @@ module TaskMapper::Provider
         normalize_datetime(self[:created_at])
       end
 
+      def status
+        self[:status].name
+      end
+
 
       def self.create(*options)
         options = options.first if options.is_a? Array
