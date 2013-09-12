@@ -49,7 +49,7 @@ describe TaskMapper::Provider::Jira::Ticket do
   end
 
   describe 'Creating Tickets' do
-    context "ticket should be created" do
+    context 'ticket should be created' do
       before do
         issue = double('IssueInstance')
         issue.should_receive(:save).with({:fields=>{:project=>{:key=> 'PRO'}, :issuetype=>{:id=>1}, :summary=> 'foo', :description=> 'bar'}})
@@ -69,6 +69,22 @@ describe TaskMapper::Provider::Jira::Ticket do
       end
       subject { project_from_tm.ticket!({:title => "foo", :description => "bar"})}
       it { should_not be_nil}
+    end
+
+  end
+
+  describe 'Updating tickets' do
+    it 'should save changes' do
+      ticket_from_jira.should_receive(:summary=).with('New Title')
+      ticket_from_jira.should_not_receive(:description=)
+      ticket_from_jira.should_receive(:save)
+
+      ticket = project_from_tm.ticket(ticket_id)
+
+      ticket.title = 'New Title'
+
+      ticket.save
+
     end
 
   end

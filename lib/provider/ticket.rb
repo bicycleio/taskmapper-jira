@@ -59,6 +59,13 @@ module TaskMapper::Provider
         Ticket.new new_issue
       end
 
+      def save
+        set_client_field(:summary, title) if client_field_changed?(:title, :summary)
+        set_client_field(:description, description) if client_field_changed?(:description)
+
+        @system_data[:client].save
+      end
+
       def self.find_by_attributes(project_id, attributes = {})
         search_by_attribute(self.find_all(project_id), attributes)
       end
@@ -83,6 +90,15 @@ module TaskMapper::Provider
       private
       def normalize_datetime(datetime)
         Time.mktime(datetime.year, datetime.month, datetime.day, datetime.hour, datetime.min, datetime.sec)
+      end
+
+      def client_field_changed?(public_field, client_field = nil)
+        client_field = public_field if client_field.nil?
+        @system_data[:client].send(client_field) != send(public_field)
+      end
+
+      def set_client_field(client_field, value)
+        @system_data[:client].send("#{client_field}=", value)
       end
 
    end
