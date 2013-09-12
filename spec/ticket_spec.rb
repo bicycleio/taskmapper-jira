@@ -75,9 +75,8 @@ describe TaskMapper::Provider::Jira::Ticket do
 
   describe 'Updating tickets' do
     it 'should save changes' do
-      ticket_from_jira.should_receive(:summary=).with('New Title')
-      ticket_from_jira.should_not_receive(:description=)
-      ticket_from_jira.should_receive(:save)
+      ticket_from_jira.should_receive(:save).with({:fields=>{:summary=> 'New Title'}})
+      ticket_from_jira.should_receive(:fetch)
 
       ticket = project_from_tm.ticket(ticket_id)
 

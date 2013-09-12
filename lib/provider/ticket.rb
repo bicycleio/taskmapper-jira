@@ -60,10 +60,12 @@ module TaskMapper::Provider
       end
 
       def save
-        set_client_field(:summary, title) if client_field_changed?(:title, :summary)
-        set_client_field(:description, description) if client_field_changed?(:description)
 
-        @system_data[:client].save
+        fields = {}
+        fields[:summary] = title if client_field_changed?(:title, :summary)
+        fields[:description]=  description if client_field_changed?(:description)
+
+        @system_data[:client].save({:fields => fields})
       end
 
       def self.find_by_attributes(project_id, attributes = {})
@@ -95,10 +97,6 @@ module TaskMapper::Provider
       def client_field_changed?(public_field, client_field = nil)
         client_field = public_field if client_field.nil?
         @system_data[:client].send(client_field) != send(public_field)
-      end
-
-      def set_client_field(client_field, value)
-        @system_data[:client].send("#{client_field}=", value)
       end
 
    end
