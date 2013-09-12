@@ -5,13 +5,21 @@ require 'rspec'
 require 'rspec/expectations'
 
 def create_jira(projects)
-  mock_jira = double("Jira")
+  mock_jira = double('Jira')
 
-  project_client = double("ProjectClient")
+  project_client = double('ProjectClient')
   project_client.stub(:all).and_return(projects)
 
   mock_jira.stub(:Project).and_return(project_client)
   mock_jira.stub(:Issue).and_return(issue_client)
+
+  issue_type = double('IssueType')
+  issue_type.stub(:all).and_return([issue_type])
+  issue_type.stub(:id).and_return(1)
+  issue_type.stub(:name).and_return('Story')
+
+  mock_jira.stub(:Issuetype).and_return(issue_type)
+
 
   projects.each {|p|
     project_client.stub(:find).with(p.key).and_return(p)
@@ -21,13 +29,13 @@ def create_jira(projects)
 end
 
 def issue_client
-  @issue_client = double("IssueClient") if @issue_client.nil?
+  @issue_client = double('IssueClient') if @issue_client.nil?
 
   @issue_client
 end
 
 def create_project(id, name, description, tickets = [])
-  project = double("Project")
+  project = double('Project')
 
   project.stub(:key).and_return(id)
   project.stub(:name).and_return(name)

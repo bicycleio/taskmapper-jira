@@ -48,4 +48,29 @@ describe TaskMapper::Provider::Jira::Ticket do
     end
   end
 
+  describe 'Creating Tickets' do
+    context "ticket should be created" do
+      before do
+        issue = double('IssueInstance')
+        issue.should_receive(:save).with({:fields=>{:project=>{:key=> 'PRO'}, :issuetype=>{:id=>1}, :summary=> 'foo', :description=> 'bar'}})
+        issue.should_receive(:fetch)
+        issue.should_receive(:key).and_return('PRO-2')
+        issue.should_receive(:status)
+        issue.should_receive(:priority)
+        issue.should_receive(:resolution)
+        issue.should_receive(:created)
+        issue.should_receive(:updated)
+        issue.should_receive(:assignee)
+        issue.should_receive(:reporter)
+        issue.should_receive(:summary).and_return('foo')
+        issue.should_receive(:description).and_return('bar')
+        issue_client.stub(:build).and_return(issue)
+
+      end
+      subject { project_from_tm.ticket!({:title => "foo", :description => "bar"})}
+      it { should_not be_nil}
+    end
+
+  end
+
 end

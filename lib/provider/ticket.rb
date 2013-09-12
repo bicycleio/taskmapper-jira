@@ -38,6 +38,27 @@ module TaskMapper::Provider
         normalize_datetime(self[:created_at])
       end
 
+
+      def self.create(*options)
+        options = options.first if options.is_a? Array
+
+        issuetypes = jira_client.Issuetype.all
+
+        type = issuetypes.find {|t| t.name == 'Story'}
+
+        new_issue = jira_client.Issue.build
+
+        fields = {:project => {:key => options[:project_id]}, :issuetype=> {:id => type.id}}
+
+        fields[:summary] = options[:title] if options.key? :title
+        fields[:description] = options[:description] if options.key? :description
+
+        new_issue.save({:fields => fields})
+        new_issue.fetch
+
+        Ticket.new new_issue
+      end
+
       def self.find_by_attributes(project_id, attributes = {})
         search_by_attribute(self.find_all(project_id), attributes)
       end
