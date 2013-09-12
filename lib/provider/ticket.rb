@@ -66,6 +66,9 @@ module TaskMapper::Provider
         fields[:description]=  description if client_field_changed?(:description)
 
         @system_data[:client].save({:fields => fields})
+        @system_data[:client].fetch
+
+        self[:updated_at] = @system_data[:client].updated
       end
 
       def self.find_by_attributes(project_id, attributes = {})
