@@ -54,7 +54,7 @@ describe TaskMapper::Provider::Jira::Ticket do
 
         context 'href' do
           subject { project_from_tm.ticket(:id => ticket_id).href }
-          it { should == "#{url}:80/Browse/#{ticket_id}" }
+          it { should == "#{url}:80/browse/#{ticket_id}" }
         end
       end
     end

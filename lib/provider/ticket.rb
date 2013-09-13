@@ -45,7 +45,7 @@ module TaskMapper::Provider
 
       def href
         options = client_issue.client.options
-        "#{options[:site]}#{options[:context_path]}/Browse/#{id}"
+        "#{options[:site]}#{options[:context_path]}/browse/#{id}"
       end
 
 
