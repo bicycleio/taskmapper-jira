@@ -23,6 +23,11 @@ def create_jira(projects)
 
   projects.each {|p|
     project_client.stub(:find).with(p.key).and_return(p)
+    p.stub(:client).and_return(mock_jira)
+
+    p.issues.each { |t|
+      t.stub(:client).and_return(mock_jira)
+    }
   }
 
   mock_jira
@@ -49,41 +54,37 @@ end
 
 def create_ticket(key, status='open')
 
-  ticket = Struct.new(:key,
-                      :status,
-                      :priority,
-                      :summary,
-                      :resolution,
-                      :created,
-                      :updated,
-                      :description, :assignee, :reporter)
-  .new(key,
-       {:name => status},
-       'high',
-       'ticket 1',
-       'none',
-       Time.now,
-       Time.now,
-       'description',
-       'myself',
-       'yourself')
-
+  ticket = double("Issue")
+  ticket.stub(:key).and_return(key)
+  ticket.stub(:status).and_return({:name => status})
+  ticket.stub(:priority).and_return('high')
+  ticket.stub(:summary).and_return('Ticket 1')
+  ticket.stub(:resolution).and_return('none')
+  ticket.stub(:created).and_return(Time.now)
+  ticket.stub(:updated).and_return(Time.now)
+  ticket.stub(:description).and_return('description')
+  ticket.stub(:assignee).and_return('myself')
+  ticket.stub(:reporter).and_return('yourself')
   ticket.stub(:fetch)
+  ticket.stub(:comments)
 
   issue_client.stub(:find).with(key).and_return(ticket)
 
   ticket
 end
 
-def override_jira(username, password, url, fakejira)
-  JIRA::Client.stub(:new).with({
-                                   :username => username,
-                                   :password => password,
-                                   :site => url + ':80',
-                                   :context_path => '',
-                                   :auth_type => :basic,
-                                   :use_ssl => false
-                               }).and_return(fakejira)
+def override_jira(username, password, url, fake_jira)
+  options = {
+      :username => username,
+      :password => password,
+      :site => url + ':80',
+      :context_path => '',
+      :auth_type => :basic,
+      :use_ssl => false
+  }
+
+  fake_jira.stub(:options).and_return(options)
+  JIRA::Client.stub(:new).with(options).and_return(fake_jira)
 
 end
 

@@ -43,6 +43,12 @@ module TaskMapper::Provider
       end
 
 
+      def href
+        options = client_issue.client.options
+        "#{options[:site]}#{options[:context_path]}/Browse/#{id}"
+      end
+
+
       def self.create(*options)
         options = options.first if options.is_a? Array
 
@@ -69,10 +75,10 @@ module TaskMapper::Provider
         fields[:summary] = title if client_field_changed?(:title, :summary)
         fields[:description]=  description if client_field_changed?(:description)
 
-        @system_data[:client].save({:fields => fields})
-        @system_data[:client].fetch
+        client_issue.save({:fields => fields})
+        client_issue.fetch
 
-        self[:updated_at] = @system_data[:client].updated
+        self[:updated_at] = client_issue.updated
       end
 
       def self.find_by_attributes(project_id, attributes = {})
@@ -103,10 +109,14 @@ module TaskMapper::Provider
 
       def client_field_changed?(public_field, client_field = nil)
         client_field = public_field if client_field.nil?
-        @system_data[:client].send(client_field) != send(public_field)
+        client_issue.send(client_field) != send(public_field)
       end
 
-   end
+      def client_issue
+        @system_data[:client]
+      end
+
+    end
 
   end
 end
