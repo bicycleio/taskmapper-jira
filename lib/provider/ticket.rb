@@ -39,7 +39,7 @@ module TaskMapper::Provider
       end
 
       def status
-        self[:status].name
+        self[:status].name.try {|name| name.parameterize.underscore.to_sym}
       end
 
 

@@ -49,7 +49,7 @@ describe TaskMapper::Provider::Jira::Ticket do
       describe 'Ticket Normalization' do
         context 'statuses' do
           subject { project_from_tm.ticket(:id => ticket_id).status }
-          it { should == 'open' }
+          it { should == :open }
         end
       end
     end
