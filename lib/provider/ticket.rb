@@ -6,6 +6,8 @@ module TaskMapper::Provider
     class Ticket < TaskMapper::Provider::Base::Ticket
       extend TaskMapper::Provider::JiraAccessor
 
+      alias_method :link, :href
+
       #API = Jira::Ticket # The class to access the api's tickets
       # declare needed overloaded methods here
       def initialize(*object)
