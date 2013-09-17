@@ -48,6 +48,10 @@ module TaskMapper::Provider
         "#{options[:site]}#{options[:context_path]}/browse/#{id}"
       end
 
+      def url
+        href
+      end
+
 
       def self.create(*options)
         options = options.first if options.is_a? Array
