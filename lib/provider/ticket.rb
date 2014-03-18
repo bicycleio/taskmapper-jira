@@ -58,12 +58,17 @@ module TaskMapper::Provider
 
         issuetypes = jira_client.Issuetype.all
 
-        type = issuetypes.find {|t| t.name == 'Story'}
+        type = issuetypes.find {|t| t.name == 'Story' or t.name == 'New Feature'}
+
+        unless type
+          type = issuetypes.first
+        end
 
         new_issue = jira_client.Issue.build
 
-        fields = {:project => {:key => options[:project_id]}, :issuetype=> {:id => type.id}}
+        fields = {:project => {:key => options[:project_id]}}
 
+        fields[:issuetype] = {:id => type.id} if type
         fields[:summary] = options[:title] if options.key? :title
         fields[:description] = options[:description] if options.key? :description
 
