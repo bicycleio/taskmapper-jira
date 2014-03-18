@@ -22,6 +22,7 @@ module TaskMapper::Provider
               :updated_at => object.updated,
               :description => object.description,
               :assignee => object.assignee,
+              :estimate => object.timeestimate,
               :requestor => object.reporter}
           else
             hash = object
