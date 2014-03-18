@@ -65,6 +65,7 @@ def create_ticket(key, status='open')
   ticket.stub(:description).and_return('description')
   ticket.stub(:assignee).and_return('myself')
   ticket.stub(:reporter).and_return('yourself')
+  ticket.stub(:timeestimate).and_return('1')
   ticket.stub(:fetch)
   ticket.stub(:comments)
 

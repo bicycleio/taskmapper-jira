@@ -74,6 +74,7 @@ describe TaskMapper::Provider::Jira::Ticket do
         issue.should_receive(:updated)
         issue.should_receive(:assignee)
         issue.should_receive(:reporter)
+        issue.should_receive(:timeestimate).and_return('1d')
         issue.should_receive(:summary).and_return('foo')
         issue.should_receive(:description).and_return('bar')
         issue_client.stub(:build).and_return(issue)
