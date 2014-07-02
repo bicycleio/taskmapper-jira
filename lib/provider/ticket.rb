@@ -2,7 +2,7 @@ module TaskMapper::Provider
   module Jira
     # Ticket class for taskmapper-jira
     #
-    
+
     class Ticket < TaskMapper::Provider::Base::Ticket
       extend TaskMapper::Provider::JiraAccessor
 
@@ -57,7 +57,8 @@ module TaskMapper::Provider
       def self.create(*options)
         options = options.first if options.is_a? Array
 
-        issuetypes = jira_client.Issuetype.all
+        issuetypes = jira_client.Project.find(options[:project_id]).issuetypes
+
 
         type = issuetypes.find {|t| t.name == 'Story' or t.name == 'New Feature'}
 
@@ -73,7 +74,7 @@ module TaskMapper::Provider
         fields[:summary] = options[:title] if options.key? :title
         fields[:description] = options[:description] if options.key? :description
 
-        new_issue.save({:fields => fields})
+        new_issue.save!({:fields => fields})
         new_issue.fetch
 
         Ticket.new new_issue
@@ -111,7 +112,7 @@ module TaskMapper::Provider
       def comment(*options)
         nil
       end
-      
+
       private
       def normalize_datetime(datetime)
         Time.mktime(datetime.year, datetime.month, datetime.day, datetime.hour, datetime.min, datetime.sec)
