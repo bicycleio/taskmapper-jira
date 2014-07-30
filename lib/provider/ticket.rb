@@ -113,6 +113,10 @@ module TaskMapper::Provider
         nil
       end
 
+      def destroy
+         client_issue.delete
+      end
+
       private
       def normalize_datetime(datetime)
         Time.mktime(datetime.year, datetime.month, datetime.day, datetime.hour, datetime.min, datetime.sec)
