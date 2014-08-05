@@ -35,11 +35,10 @@ end
 
 def issue_client
   @issue_client = double('IssueClient') if @issue_client.nil?
-
   @issue_client
 end
 
-def create_project(id, name, description, tickets = [])
+def create_project(id, name, description, tickets = [], issue_types=[])
   project = double('Project')
 
   project.stub(:key).and_return(id)
@@ -48,6 +47,7 @@ def create_project(id, name, description, tickets = [])
   project.stub(:description).and_return(description)
 
   project.stub(:issues).and_return(tickets)
+  project.stub(:issuetypes).and_return(issue_types)
 
   project
 end

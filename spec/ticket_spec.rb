@@ -3,7 +3,8 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 describe TaskMapper::Provider::Jira::Ticket do 
   let(:url) { 'http://jira.atlassian.com' }
   let(:tm) {  TaskMapper.new(:jira, :username => 'testuser', :password => 'testuser', :url => url) }
-  let(:project_from_jira) { create_project('PRO', 'project', 'project description', [ticket_from_jira]) }
+  let(:issuetypes) { [ double('issueType', name: 'Story', id: 12345)]}
+  let(:project_from_jira) { create_project('PRO', 'project', 'project description', [ticket_from_jira], issuetypes) }
   let(:fake_jira) { create_jira([project_from_jira]) }
   let(:ticket_from_jira) { create_ticket(ticket_id) }
   let(:ticket_class) { TaskMapper::Provider::Jira::Ticket }
@@ -62,9 +63,19 @@ describe TaskMapper::Provider::Jira::Ticket do
 
   describe 'Creating Tickets' do
     context 'ticket should be created' do
+      attr_accessor :issue
       before do
         issue = double('IssueInstance')
-        issue.should_receive(:save).with({:fields=>{:project=>{:key=> 'PRO'}, :issuetype=>{:id=>1}, :summary=> 'foo', :description=> 'bar'}})
+
+        issue.should_receive(:save!).with({
+            :fields => {
+                :project => {:key => 'PRO'},
+                :issuetype => {:id => 12345},
+                :summary => 'foo',
+                :description => 'bar'
+            }
+        })
+
         issue.should_receive(:fetch)
         issue.should_receive(:key).and_return('PRO-2')
         issue.should_receive(:status)
@@ -77,10 +88,14 @@ describe TaskMapper::Provider::Jira::Ticket do
         issue.should_receive(:timeestimate).and_return('1d')
         issue.should_receive(:summary).and_return('foo')
         issue.should_receive(:description).and_return('bar')
+
         issue_client.stub(:build).and_return(issue)
 
+
       end
+
       subject { project_from_tm.ticket!({:title => "foo", :description => "bar"})}
+
       it { should_not be_nil}
     end
 
@@ -92,11 +107,8 @@ describe TaskMapper::Provider::Jira::Ticket do
       ticket_from_jira.should_receive(:fetch)
 
       ticket = project_from_tm.ticket(ticket_id)
-
       ticket.title = 'New Title'
-
       ticket.save
-
     end
 
   end

@@ -58,13 +58,8 @@ module TaskMapper::Provider
         options = options.first if options.is_a? Array
 
         issuetypes = jira_client.Project.find(options[:project_id]).issuetypes
-
-
         type = issuetypes.find {|t| t.name == 'Story' or t.name == 'New Feature'}
-
-        unless type
-          type = issuetypes.first
-        end
+        type = issuetypes.first unless type
 
         new_issue = jira_client.Issue.build
 
@@ -81,7 +76,6 @@ module TaskMapper::Provider
       end
 
       def save
-
         fields = {}
         fields[:summary] = title if client_field_changed?(:title, :summary)
         fields[:description]=  description if client_field_changed?(:description)
