@@ -17,28 +17,28 @@ describe TaskMapper::Provider::Jira::Project do
     override_jira('tester', 'secret', backend_url, fakejira)
   end
 
-  describe "Retrieving projects" do 
-    context "when #projects" do 
+  describe 'Retrieving projects' do
+    context 'when #projects' do
       subject { tm.projects } 
       it { should be_an_instance_of Array }
     end
 
-    context "when #projects with array of id's" do 
+    context 'when #projects with array of ids' do
       subject { tm.projects [project_id] }
       it { should be_an_instance_of Array }
     end
 
-    context "when #projects with attributes" do 
+    context 'when #projects with attributes' do
       subject { tm.projects :id => project_id }
       it { should be_an_instance_of Array }
     end
 
-    describe "Retrieving a single project" do 
-      context "when #project with id" do 
+    describe 'Retrieving a single project' do
+      context 'when #project with id' do
         subject { tm.project project_id } 
         it { should be_an_instance_of project_class } 
 
-        context "when #project.name" do 
+        context 'when #project.name' do
           subject { tm.project(project_id).name } 
           it { should_not be_nil } 
           it {
@@ -47,7 +47,7 @@ describe TaskMapper::Provider::Jira::Project do
         end
       end
 
-      context "when #project with attribute" do 
+      context 'when #project with attribute' do
         subject { tm.project :id => project_id } 
         it { should be_an_instance_of project_class }
       end
