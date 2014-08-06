@@ -69,8 +69,16 @@ module TaskMapper::Provider
         fields[:summary] = options[:title] if options.key? :title
         fields[:description] = options[:description] if options.key? :description
 
-        new_issue.save!({:fields => fields})
-        new_issue.fetch
+        begin
+          new_issue.save!({:fields => fields})
+          new_issue.fetch
+        rescue JIRA::HTTPError => jira_error
+          parsed_response = JSON.parse(jira_error.response.body) if jira_error.response.content_type.include?('application/json')
+          the_errors = parsed_response['errors']
+          msg = the_errors.values.join('/n')
+
+          raise TaskMapper::Exception.new(msg)
+        end
 
         Ticket.new new_issue
       end

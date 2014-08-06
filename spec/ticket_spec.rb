@@ -63,7 +63,6 @@ describe TaskMapper::Provider::Jira::Ticket do
 
   describe 'Creating Tickets' do
     context 'ticket should be created' do
-      attr_accessor :issue
       before do
         issue = double('IssueInstance')
 
@@ -99,6 +98,54 @@ describe TaskMapper::Provider::Jira::Ticket do
       it { should_not be_nil}
     end
 
+    context 'should translate JIRA::HTTPError' do
+      let(:mock_response) { double('request', {code: '400',
+            message: 'Bad Request',
+            body: '{"errorMessages":[],"errors":{"summary":"The summary is invalid because it contains newline characters."}}',
+            content_type: 'application/json' })
+      }
+
+      before do
+        issue = double('IssueInstance')
+        issue.should_receive(:save!) { raise JIRA::HTTPError.new(mock_response)}
+        issue_client.stub(:build).and_return(issue)
+
+        begin
+          project_from_tm.ticket!({:title => 'foo', :description => 'bar' })
+        rescue Exception => e
+          @exception = e
+        end
+
+      end
+
+      it 'should be transformed into a TaskMapper type' do
+        @exception.should be_instance_of TaskMapper::Exception
+      end
+
+      it 'should translate the error properly' do
+        @exception.message.should eq('The summary is invalid because it contains newline characters.')
+      end
+
+    end
+
+    context 'should allow other exceptions to go through' do
+      let(:zero_division_exception) { ZeroDivisionError.new() }
+      before do
+        issue = double('IssueInstance')
+        issue.should_receive(:save!) { raise zero_division_exception}
+        issue_client.stub(:build).and_return(issue)
+
+        begin
+          project_from_tm.ticket!({:title => 'foo', :description => 'bar' })
+        rescue Exception => e
+          @exception = e
+        end
+      end
+
+      it 'should be the same exception' do
+        @exception.should be(zero_division_exception)
+      end
+    end
   end
 
   describe 'Updating tickets' do
