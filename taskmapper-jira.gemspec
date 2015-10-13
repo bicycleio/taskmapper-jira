@@ -16,8 +16,8 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   s.require_paths = ["lib"]
-  spec.add_dependency "taskmapper", "~> 1.0.2"
-  spec.add_dependency "jira-ruby", "~> 0.1.14"
+  spec.add_runtime_dependency "taskmapper", "~> 1.0.2"
+  spec.add_runtime_dependency "jira-ruby", "~> 0.1.14"
   # s.add_runtime_dependency(%q<taskmapper>, [">= 0"])
   # s.add_runtime_dependency(%q<jira-ruby>, [">= 0"])
   # s.add_development_dependency(%q<rspec>, ["~> 2.3"])
