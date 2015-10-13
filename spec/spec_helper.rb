@@ -90,6 +90,5 @@ def override_jira(username, password, url, fake_jira)
 end
 
 RSpec.configure do |config|
-  config.color_enabled = true
+  config.color = true
 end
-
