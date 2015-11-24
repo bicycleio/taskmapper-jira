@@ -13,14 +13,25 @@ module TaskMapper::Provider
           object = object.first
           unless object.is_a? Hash
             @system_data = {:client => object}
+
+            if object.issuetype.name.downcase == 'epic'
+              @title = object.customfield_10009
+              @description = object.summary
+            else
+              @title = object.summary
+              @description = object.description
+            end
+
             hash = {:id => object.key,
               :status => object.status,
               :priority => object.priority,
-              :title => object.summary,
+              :issuetype => object.issuetype.name.downcase,
+              :parent => object.customfield_10008, #default
+              :title => @title,
               :resolution => object.resolution,
               :created_at => object.created,
               :updated_at => object.updated,
-              :description => object.description,
+              :description => @description,
               :assignee => object.assignee,
               :estimate => object.timeestimate,
               :requestor => object.reporter}
@@ -60,7 +71,13 @@ module TaskMapper::Provider
         options = options.first if options.is_a? Array
 
         issuetypes = jira_client.Project.find(options[:project_id]).issuetypes
-        type = issuetypes.find {|t| t.name == 'Story' or t.name == 'New Feature'}
+
+        if options.key? :issuetype
+          type = issuetypes.find {|t| t.name.downcase == options[:issuetype] }
+        else
+          type = issuetypes.find {|t| t.name == 'Story' or t.name == 'New Feature'}
+        end
+
         type = issuetypes.first unless type
 
         new_issue = jira_client.Issue.build
@@ -68,8 +85,20 @@ module TaskMapper::Provider
         fields = {:project => {:key => options[:project_id]}}
 
         fields[:issuetype] = {:id => type.id} if type
+
+        if type.name.downcase == 'epic'
+          fields[:customfield_10009]  = options[:title] #if options.key? :title
+          fields[:summary] = options[:description] if options.key? :description
+          # have to deal with the screwy naming in Jira ... 2 required naming fields.
+          # fields[:description] = options[:description] if options.key? :description
+        else
+          fields[:summary] = options[:title] if options.key? :title
+          fields[:description] = options[:description] if options.key? :description
+        end
         fields[:summary] = options[:title] if options.key? :title
         fields[:description] = options[:description] if options.key? :description
+        fields[:customfield_10008] = options[:parent] if options.key? :parent
+
 
         begin
           new_issue.save!({:fields => fields})
@@ -88,7 +117,8 @@ module TaskMapper::Provider
       def save
         fields = {}
         fields[:summary] = title if client_field_changed?(:title, :summary)
-        fields[:description]=  description if client_field_changed?(:description)
+        fields[:description] =  description if client_field_changed?(:description)
+        #size
 
         client_issue.save({:fields => fields})
         client_issue.fetch
@@ -109,11 +139,13 @@ module TaskMapper::Provider
 
         # This is currently a magic number situation, anything over
         # 1000 and we're going to run into trouble.
-        project.issues(:maxResults => 1000).map do |ticket|
+        project.issues.map do |ticket|
           ticket.fetch
           self.new ticket
         end
       end
+
+
 
       def comment(*options)
         nil

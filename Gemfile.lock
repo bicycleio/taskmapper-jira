@@ -57,7 +57,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  jira-ruby
+  jira-ruby (~> 0.1.8)
   rake
   rspec (~> 3.3)
   taskmapper!
