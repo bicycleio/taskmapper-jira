@@ -139,8 +139,7 @@ module TaskMapper::Provider
 
         # This is currently a magic number situation, anything over
         # 1000 and we're going to run into trouble.
-        project.issues.map do |ticket|
-          ticket.fetch
+        project.issues.each do |ticket|
           self.new ticket
         end
       end

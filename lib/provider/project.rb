@@ -43,8 +43,6 @@ module TaskMapper::Provider
         projects = jira_client.Project.all
         projects.each do |project|
           # project.fetch
-          p 'individual project'
-          p project
           Project.new project
         end
       end
