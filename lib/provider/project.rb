@@ -15,7 +15,7 @@ module TaskMapper::Provider
             @system_data = {:client => object}
             hash = {:id => object.key,
                     :name => object.name,
-                    :description => object.description,
+                    # :description => object.description,
                     :updated_at => nil,
                     :created_at => nil}
           else
@@ -40,10 +40,13 @@ module TaskMapper::Provider
       end
 
       def self.find_all
-        jira_client.Project.all.map { |project|
-          project.fetch
+        projects = jira_client.Project.all
+        projects.each do |project|
+          # project.fetch
+          p 'individual project'
+          p project
           Project.new project
-        }
+        end
       end
 
       def self.find_by_id(id)
