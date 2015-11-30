@@ -46,7 +46,7 @@ module TaskMapper::Provider
 
       self.jira_client = JIRA::Client.new(options)
       begin
-        @projects = self.jira_client.Project.all
+        self.jira_client.Project.all
         @valid_auth = true
       rescue
         @valid_auth = false

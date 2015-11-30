@@ -87,16 +87,24 @@ module TaskMapper::Provider
         fields[:issuetype] = {:id => type.id} if type
 
         if type.name.downcase == 'epic'
+          p 'create epic'
           fields[:customfield_10009]  = options[:title] #if options.key? :title
-          fields[:summary] = options[:description] if options.key? :description
+          summary = ''
+          summary += options[:title] if options.key? :title
+          summary += options[:description] if options.key? :description
+          
+          summary = "default summary" if summary == ''
+           
+          fields[:summary] = summary
           # have to deal with the screwy naming in Jira ... 2 required naming fields.
           # fields[:description] = options[:description] if options.key? :description
         else
           fields[:summary] = options[:title] if options.key? :title
           fields[:description] = options[:description] if options.key? :description
         end
-        fields[:summary] = options[:title] if options.key? :title
-        fields[:description] = options[:description] if options.key? :description
+        
+        # fields[:summary] = options[:title] if options.key? :title
+        # fields[:description] = options[:description] if options.key? :description
         fields[:customfield_10008] = options[:parent] if options.key? :parent
 
 
@@ -110,7 +118,7 @@ module TaskMapper::Provider
 
           raise TaskMapper::Exception.new(msg)
         end
-
+        
         Ticket.new new_issue
       end
 
@@ -139,7 +147,8 @@ module TaskMapper::Provider
 
         # This is currently a magic number situation, anything over
         # 1000 and we're going to run into trouble.
-        project.issues.each do |ticket|
+        project.issues.map do |ticket|
+          ticket.fetch
           self.new ticket
         end
       end
@@ -151,7 +160,7 @@ module TaskMapper::Provider
       end
 
       def destroy
-         client_issue.delete
+        client_issue.delete
       end
 
       private

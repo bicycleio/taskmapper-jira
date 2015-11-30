@@ -1,7 +1,8 @@
 source :rubygems
 
 gem 'taskmapper', :git => 'https://github.com/DevJams/taskmapper.git'
-gem 'jira-ruby', '~> 0.1.8'
+# gem 'jira-ruby',  :path => '/Users/scottludtke/Projects/jira-ruby-dj'
+gem 'jira-ruby', :git => 'https://github.com/DevJams/jira-ruby.git'
 
 group :test, :development do
   gem "rspec", "~> 3.3"
