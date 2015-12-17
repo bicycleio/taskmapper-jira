@@ -1,4 +1,4 @@
-source :rubygems
+source 'http://rubygems.org'
 
 gem 'taskmapper', :git => 'https://github.com/DevJams/taskmapper.git'
 # gem 'jira-ruby',  :path => '/Users/scottludtke/Projects/jira-ruby-dj'
