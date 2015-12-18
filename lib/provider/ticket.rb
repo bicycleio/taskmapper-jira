@@ -34,6 +34,7 @@ module TaskMapper::Provider
               :description => @description,
               :assignee => object.assignee,
               :estimate => object.timeestimate,
+              :story_size => object.customfield_10004.to_i,
               :requestor => object.reporter}
           else
             hash = object
@@ -53,7 +54,8 @@ module TaskMapper::Provider
       end
 
       def status
-        self[:status].name.try {|name| name.parameterize.underscore.to_sym}
+        p self[:status]
+        self[:status]#.name.try {|name| name.parameterize.underscore.to_sym}
       end
 
 
@@ -105,7 +107,9 @@ module TaskMapper::Provider
         
         # fields[:summary] = options[:title] if options.key? :title
         # fields[:description] = options[:description] if options.key? :description
-        fields[:customfield_10008] = options[:parent] if options.key? :parent
+        fields[:customfield_10008]  = options[:parent] if options.key? :parent
+        fields[:customfield_10004]  = options[:story_size].to_i if options.key? :story_size
+        fields[:status]             = options[:status] if options.key? :status
 
 
         begin
@@ -127,6 +131,10 @@ module TaskMapper::Provider
         fields[:summary] = title if client_field_changed?(:title, :summary)
         fields[:description] =  description if client_field_changed?(:description)
         #size
+        
+        fields[:customfield_10008]  = parent if client_field_changed? :parent, :customfield_10008
+        fields[:customfield_10004]  = story_size.to_i if client_field_changed? :story_size, :customfield_10004
+        # fields[:status]             = status if client_field_changed? :status
 
         client_issue.save({:fields => fields})
         client_issue.fetch

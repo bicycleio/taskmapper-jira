@@ -1,4 +1,12 @@
 GIT
+  remote: https://github.com/DevJams/jira-ruby.git
+  revision: 32fc941cfaba82e2e4f665bafdfcd9b5da07fbd0
+  specs:
+    jira-ruby (0.1.19)
+      activesupport
+      oauth (~> 0.4.7)
+
+GIT
   remote: https://github.com/DevJams/taskmapper.git
   revision: c8d28398bf57b2c63f4dba909b99507a0d0bf8a4
   specs:
@@ -29,6 +37,7 @@ GEM
     i18n (0.7.0)
     json (1.8.3)
     minitest (5.8.3)
+    oauth (0.4.7)
     rails-observers (0.1.2)
       activemodel (~> 4.0)
     rake (10.4.2)
@@ -53,6 +62,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  jira-ruby!
   rake
   rspec (~> 3.3)
   taskmapper!
