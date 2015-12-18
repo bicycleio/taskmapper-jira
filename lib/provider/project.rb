@@ -54,5 +54,3 @@ module TaskMapper::Provider
     end
   end
 end
-
-
