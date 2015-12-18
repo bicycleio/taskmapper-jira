@@ -44,18 +44,15 @@ module TaskMapper::Provider
       end
 
       def updated_at
-        # normalize_datetime(self[:updated_at])
         self[:updated_at]
       end
 
       def created_at
-        # normalize_datetime(self[:created_at])
         self[:created_at]
       end
 
       def status
-        p self[:status]
-        self[:status]#.name.try {|name| name.parameterize.underscore.to_sym}
+        self[:status].name.try {|name| name.parameterize.underscore.to_sym}
       end
 
 
