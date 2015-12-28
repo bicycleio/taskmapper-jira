@@ -15,8 +15,10 @@ module TaskMapper::Provider
             @system_data = {:client => object}
 
             if object.issuetype.name.downcase == 'epic'
-              @title = object.customfield_10009
-              @description = object.summary
+              @title = object.summary
+              @description = object.description
+            #   @title = object.customfield_10009
+            #   @description = object.summary
             else
               @title = object.summary
               @description = object.description
@@ -55,7 +57,6 @@ module TaskMapper::Provider
         self[:status].name.try {|name| name.parameterize.underscore.to_sym}
       end
 
-
       def href
         options = client_issue.client.options
         "#{options[:site]}#{options[:context_path]}/browse/#{id}"
@@ -86,17 +87,12 @@ module TaskMapper::Provider
         fields[:issuetype] = {:id => type.id} if type
 
         if type.name.downcase == 'epic'
-          p 'create epic'
           fields[:customfield_10009]  = options[:title] #if options.key? :title
-          summary = ''
-          summary += options[:title] if options.key? :title
-          summary += options[:description] if options.key? :description
-          
-          summary = "default summary" if summary == ''
-           
-          fields[:summary] = summary
-          # have to deal with the screwy naming in Jira ... 2 required naming fields.
-          # fields[:description] = options[:description] if options.key? :description
+          fields[:summary] = options[:title]     
+          if options.key? :description
+            fields[:description] = options[:description] 
+          end
+
         else
           fields[:summary] = options[:title] if options.key? :title
           fields[:description] = options[:description] if options.key? :description
