@@ -24,6 +24,7 @@ module TaskMapper::Provider
               @description = object.description
             end
 
+
             hash = {:id => object.key,
               :status => object.status,
               :priority => object.priority,
@@ -54,8 +55,15 @@ module TaskMapper::Provider
       end
 
       def status
-        self[:status].name.try {|name| name.parameterize.underscore.to_sym}
+        unless self[:status].nil?
+          self[:status].name.try {|name| name.parameterize.underscore.to_sym}
+        end
       end
+
+      def status=(new_status)
+        self[:transition] = new_status
+      end
+
 
       def href
         options = client_issue.client.options
@@ -71,6 +79,7 @@ module TaskMapper::Provider
         options = options.first if options.is_a? Array
 
         issuetypes = jira_client.Project.find(options[:project_id]).issuetypes
+
 
         if options.key? :issuetype
           type = issuetypes.find {|t| t.name.downcase == options[:issuetype] }
@@ -102,7 +111,7 @@ module TaskMapper::Provider
         # fields[:description] = options[:description] if options.key? :description
         fields[:customfield_10008]  = options[:parent] if options.key? :parent
         fields[:customfield_10004]  = options[:story_size].to_i if options.key? :story_size
-        fields[:status]             = options[:status] if options.key? :status
+
 
 
         begin
@@ -115,24 +124,114 @@ module TaskMapper::Provider
 
           raise TaskMapper::Exception.new(msg)
         end
-        
+
+        transitions = {}
+
+        update_status = options[:status] !=  "to_do"
+
+
+        if update_status
+
+          
+        #   available_transitions = jira_client.Transition.all(:issue => new_issue)
+        #   p available_transitions
+          update_status = options[:status]
+          transition_id = nil
+
+          case update_status
+            when "in_progress"
+              transition_id = 21
+            when "done"
+              transition_id = 31
+            else
+              transition_id = 11
+          end
+          transitions[:id] = transition_id
+
+        #   available_transitions.each do |transition|
+        #     transition_name = transition.name.try {|name| name.parameterize.underscore.to_sym}
+        #     if transition_name == update_status
+        #       transitions[:id] = transition.id
+        #     end
+        #   end
+        end
+
+        if transitions.any?
+          transition = new_issue.transitions.build
+          transition.save!("transition" => transitions)
+          new_issue.fetch
+        end
+
+
         Ticket.new new_issue
       end
 
       def save
         fields = {}
+        transitions = {}
         fields[:summary] = title if client_field_changed?(:title, :summary)
         fields[:description] =  description if client_field_changed?(:description)
-        #size
-        
+
         fields[:customfield_10008]  = parent if client_field_changed? :parent, :customfield_10008
         fields[:customfield_10004]  = story_size.to_i if client_field_changed? :story_size, :customfield_10004
-        # fields[:status]             = status if client_field_changed? :status
+
+
+        update_status = client_status = nil
+        if self.key? :transition
+            if self[:transition].is_a? String
+            update_status = self[:transition].parameterize.underscore.to_sym
+            else 
+            # update_status = self[:status].try {|name| name.parameterize.underscore.to_sym}
+            if self[:transition].key? :name
+                update_status = self[:transition].name.parameterize.underscore.to_sym
+            end
+            end
+
+            if client_issue.send(:status).is_a? String
+            client_status = client_issue.send(:status).parameterize.underscore.to_sym
+            else
+            client_status = client_issue.send(:status).name.parameterize.underscore.to_sym
+            end
+
+
+            if client_status != update_status
+            available_transitions = self.class.jira_client.Transition.all(:issue => client_issue)
+            available_transitions.each do |transition|
+            transition_name = transition.name.try {|name| name.parameterize.underscore.to_sym}
+            if transition_name == update_status
+                transitions[:id] = transition.id
+            end
+            end
+            end
+        end
+
 
         client_issue.save({:fields => fields})
         client_issue.fetch
+        
+        
+        if transitions.any?
+          transition = client_issue.transitions.build
+          transition.save!("transition" => transitions)
+
+
+          status_string = ""
+          case self[:transition]
+            when 'to_do'
+              status_string = "To Do"
+            when 'in_progress'
+              status_string = "In Progress"
+            when 'done'
+              status_string = "Done"
+            else
+              status_string = "To Do"
+          end
+
+        end
+
 
         self[:updated_at] = client_issue.updated
+
       end
 
       def self.find_by_attributes(project_id, attributes = {})
@@ -155,7 +254,6 @@ module TaskMapper::Provider
       end
 
 
-
       def comment(*options)
         nil
       end
@@ -173,6 +271,7 @@ module TaskMapper::Provider
         client_field = public_field if client_field.nil?
         client_issue.send(client_field) != send(public_field)
       end
+      
 
       def client_issue
         @system_data[:client]

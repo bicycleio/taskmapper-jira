@@ -53,6 +53,11 @@ describe TaskMapper::Provider::Jira::Ticket do
           it { should == :open }
         end
 
+        context 'transitions' do
+          subject { project_from_tm.ticket(:id => ticket_id).transitions }
+          it { should == :open }
+        end
+
         context 'href' do
           subject { project_from_tm.ticket(:id => ticket_id).href }
           it { should == "#{url}:80/browse/#{ticket_id}" }

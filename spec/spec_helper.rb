@@ -54,15 +54,22 @@ end
 
 def create_ticket(key, status='open')
 
+  issue_type = double('issuetype')
+  issue_type.stub(:id).and_return(1)
+  issue_type.stub(:name).and_return('Story')
+
   ticket = double("Issue")
   ticket.stub(:key).and_return(key)
-  ticket.stub(:status).and_return({:name => status})
+  ticket.stub(:status).and_return({:name => status, :id => 3})
   ticket.stub(:priority).and_return('high')
   ticket.stub(:summary).and_return('Ticket 1')
   ticket.stub(:resolution).and_return('none')
   ticket.stub(:created).and_return(Time.now)
   ticket.stub(:updated).and_return(Time.now)
   ticket.stub(:description).and_return('description')
+  ticket.stub(:issuetype).and_return(issue_type)
+  ticket.stub(:customfield_10008).and_return(1991)
+  ticket.stub(:customfield_10004).and_return(5)
   ticket.stub(:assignee).and_return('myself')
   ticket.stub(:reporter).and_return('yourself')
   ticket.stub(:timeestimate).and_return('1')
