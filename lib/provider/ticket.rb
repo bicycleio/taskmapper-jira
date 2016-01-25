@@ -121,6 +121,10 @@ module TaskMapper::Provider
           parsed_response = JSON.parse(jira_error.response.body) if jira_error.response.content_type.include?('application/json')
           the_errors = parsed_response['errors']
           msg = the_errors.values.join('/n')
+          
+          if msg.include? "'customfield_10004' cannot be set"
+            msg = "We need Story Sizes to be enabled in JIRA to process these requests."
+          end
 
           raise TaskMapper::Exception.new(msg)
         end
