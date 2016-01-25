@@ -37,7 +37,7 @@ module TaskMapper::Provider
               :description => @description,
               :assignee => object.assignee,
               :estimate => object.timeestimate,
-              :story_size => object.customfield_10004.to_i,
+              :story_size => object.customfield_10004,
               :requestor => object.reporter}
           else
             hash = object
@@ -110,7 +110,7 @@ module TaskMapper::Provider
         # fields[:summary] = options[:title] if options.key? :title
         # fields[:description] = options[:description] if options.key? :description
         fields[:customfield_10008]  = options[:parent] if options.key? :parent
-        fields[:customfield_10004]  = options[:story_size].to_i if options.key? :story_size
+        fields[:customfield_10004]  = options[:story_size] if options.key? :story_size
 
 
 

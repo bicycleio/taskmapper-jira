@@ -1,5 +1,5 @@
 class TaskMapper
   module Jira
-    VERSION = '0.4.12.3'
+    VERSION = '0.4.12.4'
   end
 end
