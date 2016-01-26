@@ -112,7 +112,7 @@ module TaskMapper::Provider
         # fields[:summary] = options[:title] if options.key? :title
         # fields[:description] = options[:description] if options.key? :description
         fields[:customfield_10008]  = options[:parent] if options.key? :parent
-        fields[:customfield_10004]  = options[:story_size].to_s if options.key? :story_size
+        fields[:customfield_10004]  = options[:story_size] if options.key? :story_size
 
 
 
