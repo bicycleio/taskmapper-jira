@@ -23,7 +23,10 @@ module TaskMapper::Provider
               @title = object.summary
               @description = object.description
             end
-
+            
+            story_size = object.customfield_10004
+            story_size = story_size.prettify.to_s unless story_size.nil?
+            
             hash = {:id => object.key,
               :status => object.status,
               :priority => object.priority,
@@ -36,7 +39,7 @@ module TaskMapper::Provider
               :description => @description,
               :assignee => object.assignee,
               :estimate => object.timeestimate,
-              :story_size => object.customfield_10004.to_s,
+              :story_size => story_size,
               :requestor => object.reporter}
           else
             hash = object
@@ -109,7 +112,7 @@ module TaskMapper::Provider
         # fields[:summary] = options[:title] if options.key? :title
         # fields[:description] = options[:description] if options.key? :description
         fields[:customfield_10008]  = options[:parent] if options.key? :parent
-        fields[:customfield_10004]  = options[:story_size] if options.key? :story_size
+        fields[:customfield_10004]  = options[:story_size].to_s if options.key? :story_size
 
 
 
@@ -176,7 +179,7 @@ module TaskMapper::Provider
         fields[:description] =  description if client_field_changed?(:description)
 
         fields[:customfield_10008]  = parent if client_field_changed? :parent, :customfield_10008
-        fields[:customfield_10004]  = story_size.to_i if client_field_changed? :story_size, :customfield_10004
+        fields[:customfield_10004]  = story_size.to_s if client_field_changed? :story_size, :customfield_10004
 
 
         update_status = client_status = nil
@@ -282,5 +285,11 @@ module TaskMapper::Provider
 
     end
 
+  end
+end
+
+class Float
+  def prettify
+    to_i == self ? to_i : self
   end
 end
