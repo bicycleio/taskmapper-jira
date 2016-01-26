@@ -15,10 +15,8 @@ module TaskMapper::Provider
             @system_data = {:client => object}
 
             if object.issuetype.name.downcase == 'epic'
-              @title = object.summary
               @description = object.description
-            #   @title = object.customfield_10009
-            #   @description = object.summary
+              @title = object.customfield_10009
             else
               @title = object.summary
               @description = object.description
@@ -154,12 +152,6 @@ module TaskMapper::Provider
           end
           transitions[:id] = transition_id
 
-        #   available_transitions.each do |transition|
-        #     transition_name = transition.name.try {|name| name.parameterize.underscore.to_sym}
-        #     if transition_name == update_status
-        #       transitions[:id] = transition.id
-        #     end
-        #   end
         end
 
         if transitions.any?
@@ -175,8 +167,14 @@ module TaskMapper::Provider
       def save
         fields = {}
         transitions = {}
-        fields[:summary] = title if client_field_changed?(:title, :summary)
-        fields[:description] =  description if client_field_changed?(:description)
+
+        if self.issuetype == "epic"
+          fields[:customfield_10009] = title if client_field_changed?(:title, :customfield_10009)
+          fields[:description] =  description if client_field_changed?(:description)
+        else
+          fields[:summary] = title if client_field_changed?(:title, :summary)
+          fields[:description] =  description if client_field_changed?(:description)
+        end
 
         fields[:customfield_10008]  = parent if client_field_changed? :parent, :customfield_10008
         fields[:customfield_10004]  = story_size if client_field_changed? :story_size, :customfield_10004
