@@ -179,34 +179,34 @@ module TaskMapper::Provider
         fields[:description] =  description if client_field_changed?(:description)
 
         fields[:customfield_10008]  = parent if client_field_changed? :parent, :customfield_10008
-        fields[:customfield_10004]  = story_size.to_s if client_field_changed? :story_size, :customfield_10004
+        fields[:customfield_10004]  = story_size if client_field_changed? :story_size, :customfield_10004
 
 
         update_status = client_status = nil
         if self.key? :transition
             if self[:transition].is_a? String
-            update_status = self[:transition].parameterize.underscore.to_sym
+              update_status = self[:transition].parameterize.underscore.to_sym
             else 
             # update_status = self[:status].try {|name| name.parameterize.underscore.to_sym}
-            if self[:transition].key? :name
+              if self[:transition].key? :name
                 update_status = self[:transition].name.parameterize.underscore.to_sym
-            end
+              end
             end
 
             if client_issue.send(:status).is_a? String
-            client_status = client_issue.send(:status).parameterize.underscore.to_sym
+              client_status = client_issue.send(:status).parameterize.underscore.to_sym
             else
-            client_status = client_issue.send(:status).name.parameterize.underscore.to_sym
+              client_status = client_issue.send(:status).name.parameterize.underscore.to_sym
             end
-
+            
 
             if client_status != update_status
-            available_transitions = self.class.jira_client.Transition.all(:issue => client_issue)
-            available_transitions.each do |transition|
-            transition_name = transition.name.try {|name| name.parameterize.underscore.to_sym}
-            if transition_name == update_status
+              available_transitions = self.class.jira_client.Transition.all(:issue => client_issue)
+              available_transitions.each do |transition|
+              transition_name = transition.name.try {|name| name.parameterize.underscore.to_sym}
+              if transition_name == update_status
                 transitions[:id] = transition.id
-            end
+              end
             end
             end
         end
