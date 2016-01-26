@@ -24,7 +24,6 @@ module TaskMapper::Provider
               @description = object.description
             end
 
-
             hash = {:id => object.key,
               :status => object.status,
               :priority => object.priority,
@@ -37,7 +36,7 @@ module TaskMapper::Provider
               :description => @description,
               :assignee => object.assignee,
               :estimate => object.timeestimate,
-              :story_size => object.customfield_10004,
+              :story_size => object.customfield_10004.to_s,
               :requestor => object.reporter}
           else
             hash = object
