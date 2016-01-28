@@ -250,8 +250,8 @@ module TaskMapper::Provider
         project = jira_client.Project.find(project_id)
 
         # This is currently a magic number situation, anything over
-        # 1000 and we're going to run into trouble.
-        project.issues.map do |ticket|
+        # 2500 and we're going to run into trouble.
+        project.issues(:maxResults => 2500).map do |ticket|
           ticket.fetch
           self.new ticket
         end
