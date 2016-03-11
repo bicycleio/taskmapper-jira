@@ -14,22 +14,42 @@ module TaskMapper::Provider
           unless object.is_a? Hash
             @system_data = {:client => object}
 
+            if self.class.jira_project_metadata(object.project.key).nil?
+              meta = self.class.createmeta(object.project.key)
+              meta.project_id = object.project.key
+
+              self.class.jira_project_metadata = meta
+            else
+              meta = self.class.jira_project_metadata(object.project.key)
+            end
+
+            story_points_field = meta['story-points']
+            epic_link_field = meta['epic-link']
+            epic_name_field = meta['epic-name']
+
+            fields = object.attrs.fetch('fields')
+
+            story_points = fields.fetch story_points_field.to_s
+            epic_link = fields.fetch epic_link_field.to_s
+
+
             if object.issuetype.name.downcase == 'epic'
+              epic_name = fields.fetch epic_name_field.to_s
+
               @description = object.description
-              @title = object.customfield_10009
+              @title = epic_name
             else
               @title = object.summary
               @description = object.description
             end
             
-            story_size = object.customfield_10004
-            story_size = story_size.prettify.to_s unless story_size.nil?
-            
+            story_size = story_points.prettify.to_s unless story_points.nil?
+
             hash = {:id => object.key,
               :status => object.status,
               :priority => object.priority,
               :issuetype => object.issuetype.name.downcase,
-              :parent => object.customfield_10008, #default
+              :parent => epic_link,
               :title => @title,
               :resolution => object.resolution,
               :created_at => object.created,
@@ -64,7 +84,6 @@ module TaskMapper::Provider
         self[:transition] = new_status
       end
 
-
       def href
         options = client_issue.client.options
         "#{options[:site]}#{options[:context_path]}/browse/#{id}"
@@ -76,9 +95,23 @@ module TaskMapper::Provider
 
 
       def self.create(*options)
+
         options = options.first if options.is_a? Array
 
         issuetypes = jira_client.Project.find(options[:project_id]).issuetypes
+
+        if jira_project_metadata(options[:project_id]).nil?
+          meta = createmeta(options[:project_id])
+          meta.project_id = options[:project_id]
+
+          jira_project_metadata = meta
+        else
+          meta = jira_project_metadata(options[:project_id])
+        end
+
+        story_points_field = meta['story-points']
+        epic_link_field = meta['epic-link']
+        epic_name_field = meta['epic-name']
 
 
         if options.key? :issuetype
@@ -95,8 +128,10 @@ module TaskMapper::Provider
 
         fields[:issuetype] = {:id => type.id} if type
 
+        epic_name_field = epic_name_field.to_sym
+
         if type.name.downcase == 'epic'
-          fields[:customfield_10009]  = options[:title] #if options.key? :title
+          fields[epic_name_field]  = options[:title] #if options.key? :title
           fields[:summary] = options[:title]     
           if options.key? :description
             fields[:description] = options[:description] 
@@ -106,13 +141,11 @@ module TaskMapper::Provider
           fields[:summary] = options[:title] if options.key? :title
           fields[:description] = options[:description] if options.key? :description
         end
-        
-        # fields[:summary] = options[:title] if options.key? :title
-        # fields[:description] = options[:description] if options.key? :description
-        fields[:customfield_10008]  = options[:parent] if options.key? :parent
-        fields[:customfield_10004]  = options[:story_size] if options.key? :story_size
 
-
+        epic_link_field = epic_link_field.to_sym
+        fields[epic_link_field]  = options[:parent] if options.key? :parent
+        story_points_field = story_points_field.to_sym
+        fields[story_points_field]  = options[:story_size] if options.key? :story_size
 
         begin
           new_issue.save!({:fields => fields})
@@ -168,16 +201,35 @@ module TaskMapper::Provider
         fields = {}
         transitions = {}
 
+
+        if self.class.jira_project_metadata(client_issue.project.key).nil?
+          meta = self.class.createmeta(client_issue.project.key)
+          meta.project_id = client_issue.project.key
+
+          self.class.jira_project_metadata = meta
+        else
+          meta = self.class.jira_project_metadata(client_issue.project.key)
+        end
+
+        story_points_field = meta['story-points']
+        epic_link_field = meta['epic-link']
+        epic_name_field = meta['epic-name']
+
+        epic_name_field = epic_name_field.to_sym
+        epic_link_field = epic_link_field.to_sym
+        story_points_field = story_points_field.to_sym
+
         if self.issuetype == "epic"
-          fields[:customfield_10009] = title if client_field_changed?(:title, :customfield_10009)
+          fields[epic_name_field] = title if client_field_changed?(:title, epic_name_field)
           fields[:description] =  description if client_field_changed?(:description)
         else
           fields[:summary] = title if client_field_changed?(:title, :summary)
           fields[:description] =  description if client_field_changed?(:description)
         end
 
-        fields[:customfield_10008]  = parent if client_field_changed? :parent, :customfield_10008
-        fields[:customfield_10004]  = story_size if client_field_changed? :story_size, :customfield_10004
+
+        fields[epic_link_field]  = parent if client_field_changed? :parent, epic_link_field
+        fields[story_points_field]  = story_size if client_field_changed? :story_size, story_points_field
 
 
         update_status = client_status = nil
@@ -185,7 +237,6 @@ module TaskMapper::Provider
             if self[:transition].is_a? String
               update_status = self[:transition].parameterize.underscore.to_sym
             else 
-            # update_status = self[:status].try {|name| name.parameterize.underscore.to_sym}
               if self[:transition].key? :name
                 update_status = self[:transition].name.parameterize.underscore.to_sym
               end
@@ -213,11 +264,9 @@ module TaskMapper::Provider
         client_issue.save({:fields => fields})
         client_issue.fetch
         
-        
         if transitions.any?
           transition = client_issue.transitions.build
           transition.save!("transition" => transitions)
-
 
           status_string = ""
           case self[:transition]
@@ -251,12 +300,17 @@ module TaskMapper::Provider
 
         # This is currently a magic number situation, anything over
         # 2500 and we're going to run into trouble.
-        project.issues(:maxResults => 2500).map do |ticket|
+        project.issues(:maxResults => 2600).map do |ticket|
           ticket.fetch
           self.new ticket
         end
       end
 
+
+      def self.createmeta(project_id)
+        project = jira_client.Project.find(project_id)
+        project.createmeta
+      end
 
       def comment(*options)
         nil
@@ -267,10 +321,6 @@ module TaskMapper::Provider
       end
 
       private
-      # def normalize_datetime(datetime)
-      #   Time.mktime(datetime.year, datetime.month, datetime.day, datetime.hour, datetime.min, datetime.sec)
-      # end
-
       def client_field_changed?(public_field, client_field = nil)
         client_field = public_field if client_field.nil?
         client_issue.send(client_field) != send(public_field)

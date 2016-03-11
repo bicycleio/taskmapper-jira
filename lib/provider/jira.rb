@@ -14,6 +14,16 @@ module TaskMapper::Provider
       Thread.current['TaskMapper::Provider::JiraAccessor.jira'] = jira_client
     end
 
+    def jira_project_metadata(project_id)
+      Thread.current['TaskMapper::Provider::JiraAccessor.jira_project_metadata.#{project_id}']
+    end
+
+    def jira_project_metadata=(jira_project_metadata)
+      project_id = jira_project_metadata.project_id
+      Thread.current['TaskMapper::Provider::JiraAccessor.jira_project_metadata.#{project_id}'] = jira_project_metadata
+    end
+
+
   end
 
   module Jira
