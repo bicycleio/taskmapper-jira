@@ -27,11 +27,11 @@ module TaskMapper::Provider
             if object.issuetype.name.downcase == 'epic'
               epic_name = fields.fetch epic_name_field.to_s
 
-              @description = object.description
+              @description = object.description.to_s
               @title = epic_name
             else
               @title = object.summary
-              @description = object.description
+              @description = object.description.to_s
             end
             
             story_size = story_points.prettify.to_s unless story_points.nil?
@@ -45,7 +45,7 @@ module TaskMapper::Provider
               :resolution => object.resolution,
               :created_at => object.created,
               :updated_at => object.updated,
-              :description => @description,
+              :description => @description.to_s,
               :assignee => object.assignee,
               :estimate => object.timeestimate,
               :story_size => story_size,
@@ -154,13 +154,13 @@ module TaskMapper::Provider
           fields[epic_name_field]  = title #if options.key? :title
           fields[:summary] = title     
           if options.key? :description
-            fields[:description] = options[:description] 
+            fields[:description] = options[:description].to_s
           end
 
         else
           title = options[:title].strip
           fields[:summary] = title if options.key? :title
-          fields[:description] = options[:description] if options.key? :description
+          fields[:description] = options[:description].to_s if options.key? :description
         end
 
         epic_link_field = epic_link_field.to_sym unless epic_link_field.nil?
