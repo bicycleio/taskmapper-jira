@@ -23,7 +23,7 @@ module TaskMapper::Provider
             story_points = fields.fetch story_points_field.to_s if fields.key? story_points_field.to_s
             epic_link = nil
             epic_link = fields.fetch epic_link_field.to_s if fields.key? epic_link_field.to_s
-            
+
             if object.issuetype.name.downcase == 'epic'
               epic_name = fields.fetch epic_name_field.to_s
 
@@ -33,7 +33,7 @@ module TaskMapper::Provider
               @title = object.summary
               @description = object.description.to_s
             end
-            
+
             story_size = story_points.prettify.to_s unless story_points.nil?
 
             hash = {:id => object.key,
@@ -57,21 +57,21 @@ module TaskMapper::Provider
           super(hash)
         end
       end
-      
+
       def validate_fields_available (meta)
         epic_story_points_missing = meta['epic-story-points'].nil?
         story_story_points_missing = meta['story-story-points'].nil?
-        
+
         if epic_story_points_missing
           msg = "Story points are not enabled for Epics in JIRA. Cardboard requires having them enabled."
           raise TaskMapper::Exception.new(msg)
         end
-        
+
         if story_story_points_missing
           msg = "Story points are not enabled for Stories in JIRA. Cardboard requires having them enabled."
           raise TaskMapper::Exception.new(msg)
         end
-        
+
       end
 
       def get_meta (project_key)
@@ -83,7 +83,7 @@ module TaskMapper::Provider
         else
           meta = self.class.jira_project_metadata(project_key)
         end
-                
+
         meta
       end
 
@@ -120,7 +120,7 @@ module TaskMapper::Provider
         options = options.first if options.is_a? Array
 
         issuetypes = jira_client.Project.find(options[:project_id]).issuetypes
-        
+
         if jira_project_metadata(options[:project_id]).nil?
           meta = createmeta(options[:project_id])
           meta.project_id = options[:project_id]
@@ -150,9 +150,9 @@ module TaskMapper::Provider
 
         if type.name.downcase == 'epic'
           title = options[:title].strip
-          
+
           fields[epic_name_field]  = title #if options.key? :title
-          fields[:summary] = title     
+          fields[:summary] = title
           if options.key? :description
             fields[:description] = options[:description].to_s
           end
@@ -175,7 +175,7 @@ module TaskMapper::Provider
           parsed_response = JSON.parse(jira_error.response.body) if jira_error.response.content_type.include?('application/json')
           the_errors = parsed_response['errors']
           msg = the_errors.values.join('/n')
-          
+
           if msg.include? "'customfield_10004' cannot be set"
             msg = "We need Story Sizes to be enabled in JIRA to process these requests."
           end
@@ -220,7 +220,7 @@ module TaskMapper::Provider
         transitions = {}
 
         meta = get_meta(client_issue.project.key)
-        
+
         story_points_field = meta['story-story-points']
         epic_link_field = meta['epic-epic-link']
         epic_name_field = meta['epic-epic-name']
@@ -228,15 +228,15 @@ module TaskMapper::Provider
         epic_name_field = epic_name_field.to_sym
         epic_link_field = epic_link_field.to_sym
         story_points_field = story_points_field.to_sym
-        
+
         epic_story_points_missing = meta['epic-story-points'].nil?
         story_story_points_missing = meta['story-story-points'].nil?
-        
+
         if epic_story_points_missing
           msg = "Story points are not enabled for Epics in JIRA."
           raise TaskMapper::Exception.new(msg)
         end
-        
+
         if story_story_points_missing
           msg = "Story points are not enabled for Stories in JIRA. Cardboard requires having them enabled."
           raise TaskMapper::Exception.new(msg)
@@ -260,7 +260,7 @@ module TaskMapper::Provider
         if self.key? :transition
             if self[:transition].is_a? String
               update_status = self[:transition].parameterize.underscore.to_sym
-            else 
+            else
               if self[:transition].key? :name
                 update_status = self[:transition].name.parameterize.underscore.to_sym
               end
@@ -271,7 +271,7 @@ module TaskMapper::Provider
             else
               client_status = client_issue.send(:status).name.parameterize.underscore.to_sym
             end
-            
+
 
             if client_status != update_status
               available_transitions = self.class.jira_client.Transition.all(:issue => client_issue)
@@ -287,7 +287,7 @@ module TaskMapper::Provider
 
         client_issue.save({:fields => fields})
         client_issue.fetch
-        
+
         if transitions.any?
           transition = client_issue.transitions.build
           transition.save!("transition" => transitions)
@@ -320,11 +320,8 @@ module TaskMapper::Provider
       end
 
       def self.find_all(project_id)
-      
         jql_query_string = "project = #{project_id} AND issuetype in (Epic, Story)"
-        issues = jira_client.Issue.jql(jql_query_string, :maxResults => 2600)
-        
-        
+        issues = jira_client.Issue.jql(jql_query_string, :max_results => 1000)
         issues.map do |ticket|
           ticket.fetch
           self.new ticket
@@ -350,7 +347,7 @@ module TaskMapper::Provider
         client_field = public_field if client_field.nil?
         client_issue.send(client_field) != send(public_field)
       end
-      
+
 
       def client_issue
         @system_data[:client]
