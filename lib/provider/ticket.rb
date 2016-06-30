@@ -323,7 +323,6 @@ module TaskMapper::Provider
         jql_query_string = "project = #{project_id} AND issuetype in (Epic, Story)"
         issues = jira_client.Issue.jql(jql_query_string, :max_results => 1000)
         issues.map do |ticket|
-          ticket.fetch
           self.new ticket
         end
       end
