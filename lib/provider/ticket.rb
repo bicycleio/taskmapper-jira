@@ -114,11 +114,12 @@ module TaskMapper::Provider
         href
       end
 
+      #POST /rest/api/2/issue/bulk
+      def bulk_create
+        
+      end
 
-      def self.create(*options)
-
-        options = options.first if options.is_a? Array
-
+      def self.build_ticket_attributes(options)
         issuetypes = jira_client.Project.find(options[:project_id]).issuetypes
 
         if jira_project_metadata(options[:project_id]).nil?
@@ -140,8 +141,6 @@ module TaskMapper::Provider
 
         type = issuetypes.first unless type
 
-        new_issue = jira_client.Issue.build
-
         fields = {:project => {:key => options[:project_id]}}
 
         fields[:issuetype] = {:id => type.id} if type
@@ -151,7 +150,7 @@ module TaskMapper::Provider
         if type.name.downcase == 'epic'
           title = options[:title].strip
 
-          fields[epic_name_field]  = title #if options.key? :title
+          fields[epic_name_field]  = title
           fields[:summary] = title
           if options.key? :description
             fields[:description] = options[:description].to_s
@@ -167,9 +166,18 @@ module TaskMapper::Provider
         fields[epic_link_field]  = options[:parent] if options.key? :parent
         story_points_field = story_points_field.to_sym unless story_points_field.nil?
         fields[story_points_field]  = options[:story_size].to_f.prettify if options.key? :story_size
+        fields
+      end
 
+
+      def self.create(*options)
+
+        options = options.first if options.is_a? Array
+
+        new_issue = jira_client.Issue.build
+        raise "debo romper"
         begin
-          new_issue.save!({:fields => fields})
+          new_issue.save!( { fields: build_ticket_attributes(options) } )
           new_issue.fetch
         rescue JIRA::HTTPError => jira_error
           parsed_response = JSON.parse(jira_error.response.body) if jira_error.response.content_type.include?('application/json')
