@@ -141,13 +141,6 @@ module TaskMapper::Provider
         issuetypes = project.issuetypes
         meta = project.metadata
 
-        # if jira_project_metadata(options[:project_id]).nil?
-        #   meta = project.metadata
-        #   meta.project_id = options[:project_id]
-        # else
-        #   meta = jira_project_metadata(options[:project_id])
-        # end
-
         story_points_field = meta['story-story-points']
         epic_link_field = meta['epic-epic-link']
         epic_name_field = meta['epic-epic-name'].try(:to_sym)
