@@ -13,7 +13,7 @@ module TaskMapper::Provider
           object = object.first
           unless object.is_a? Hash
             @system_data = {:client => object}
-            meta = get_meta(object.project.key)
+            meta = get_meta(object.project)
             story_points_field = meta['story-story-points']
             epic_link_field = meta['epic-epic-link']
             epic_name_field = meta['epic-epic-name']
@@ -36,20 +36,21 @@ module TaskMapper::Provider
 
             story_size = story_points.prettify.to_s unless story_points.nil?
 
-            hash = {:id => object.key,
-              :status => object.status,
-              :priority => object.priority,
-              :issuetype => object.issuetype.name.downcase,
-              :parent => epic_link,
-              :title => @title,
-              :resolution => object.resolution,
-              :created_at => object.created,
-              :updated_at => object.updated,
-              :description => @description.to_s,
-              :assignee => object.assignee,
-              :estimate => object.timeestimate,
-              :story_size => story_size,
-              :requestor => object.reporter}
+            hash = { 
+                id:  object.key,
+                status:  object.status,
+                priority:  object.priority,
+                issuetype:  object.issuetype.name.downcase,
+                parent:  epic_link,
+                title:  @title,
+                resolution:  object.resolution,
+                created_at:  object.created,
+                updated_at:  object.updated,
+                description:  @description.to_s,
+                assignee:  object.assignee,
+                estimate:  object.timeestimate,
+                story_size:  story_size,
+                requestor:  object.reporter }
 
           else
             hash = object
@@ -74,17 +75,14 @@ module TaskMapper::Provider
 
       end
 
-      def get_meta (project_key)
-        if self.class.jira_project_metadata(project_key).nil?
-          meta = self.class.createmeta(project_key)
-          meta.project_id = project_key
+      def get_meta (project)
+        if self.class.jira_project_metadata(project.key).nil?
+          meta = project.metadata
           validate_fields_available(meta)
           self.class.jira_project_metadata = meta
         else
-          meta = self.class.jira_project_metadata(project_key)
+          self.class.jira_project_metadata(project.key)
         end
-
-        meta
       end
 
       def updated_at
@@ -96,9 +94,7 @@ module TaskMapper::Provider
       end
 
       def status
-        unless self[:status].nil?
-          self[:status].name.try {|name| name.parameterize.underscore.to_sym}
-        end
+        self[:status].name.try {|name| name.parameterize.underscore.to_sym} unless self[:status].nil?
       end
 
       def status=(new_status)
@@ -115,23 +111,46 @@ module TaskMapper::Provider
       end
 
       #POST /rest/api/2/issue/bulk
-      def bulk_create
-        
+      def self.bulk_create(attributes)
+        response   = jira_client.post("/rest/api/2/issue/bulk", { issueUpdates: attributes.map{ |attribute| attribute[:data] } }.to_json)
+        issue_keys = JSON.parse(response.body)["issues"].map{ |issue| issue["key"] }
+        json_created_issues = JSON.parse( jira_client.get("/rest/api/2/search?jql=" + CGI.escape("issue IN (#{issue_keys.join(',')})") ).body )
+        issues = json_created_issues["issues"].map{|json| jira_client.Issue.build(json) }
+        issues.each { |issue| create_transition_for_issue(issue) }
+
+        issue_card_ids = issue_keys.each_with_index.inject({}) do |hash, (issue_key, index)| 
+          hash[issue_key] = attributes[index][:card].id
+          hash
+        end
+
+        {
+          issue_card_ids: issue_card_ids,
+          tickets: issues.map{ |issue| Ticket.new(issue) }
+        }
+                
       end
 
-      def self.build_ticket_attributes(options)
-        issuetypes = jira_client.Project.find(options[:project_id]).issuetypes
+      def self.create_transition_for_issue(issue)
+        return unless issue.try(:status).try(:statusCategory).try(:[],"id").to_i != 2 #Issue status is different than TO DO
+        transition_options = { id: transition_number_for_status( issue.status.name.downcase.underscore.split.join("_") ) }
+        transition = issue.transitions.build
+        transition.save!(transition: transition_options)
+      end
 
-        if jira_project_metadata(options[:project_id]).nil?
-          meta = createmeta(options[:project_id])
-          meta.project_id = options[:project_id]
-        else
-          meta = jira_project_metadata(options[:project_id])
-        end
+      def self.build_ticket_attributes_for_project(project, options)
+        issuetypes = project.issuetypes
+        meta = project.metadata
+
+        # if jira_project_metadata(options[:project_id]).nil?
+        #   meta = project.metadata
+        #   meta.project_id = options[:project_id]
+        # else
+        #   meta = jira_project_metadata(options[:project_id])
+        # end
 
         story_points_field = meta['story-story-points']
         epic_link_field = meta['epic-epic-link']
-        epic_name_field = meta['epic-epic-name']
+        epic_name_field = meta['epic-epic-name'].try(:to_sym)
 
         if options.key? :issuetype
           type = issuetypes.find {|t| t.name.downcase == options[:issuetype] }
@@ -141,85 +160,62 @@ module TaskMapper::Provider
 
         type = issuetypes.first unless type
 
-        fields = {:project => {:key => options[:project_id]}}
+        fields = { project: { key: project.key.presence || options[:project_id] } }
 
-        fields[:issuetype] = {:id => type.id} if type
-
-        epic_name_field = epic_name_field.to_sym unless epic_name_field.nil?
+        fields[:issuetype] = { id: type.id } if type
 
         if type.name.downcase == 'epic'
           title = options[:title].strip
 
           fields[epic_name_field]  = title
           fields[:summary] = title
-          if options.key? :description
+          
+          if options.key?(:description)
             fields[:description] = options[:description].to_s
           end
 
         else
-          title = options[:title].strip
+          title = options[:title].to_s.strip
           fields[:summary] = title if options.key? :title
           fields[:description] = options[:description].to_s if options.key? :description
         end
 
-        epic_link_field = epic_link_field.to_sym unless epic_link_field.nil?
-        fields[epic_link_field]  = options[:parent] if options.key? :parent
-        story_points_field = story_points_field.to_sym unless story_points_field.nil?
-        fields[story_points_field]  = options[:story_size].to_f.prettify if options.key? :story_size
+        fields[epic_link_field.to_sym]     = options[:parent] if epic_link_field.present? && options.key?(:parent)
+        fields[story_points_field.to_sym]  = options[:story_size].to_f.prettify if story_points_field.present? && options.key?(:story_size)
         fields
       end
 
+      def self.transition_number_for_status(status)
+        return 21 if status == "in_progress"
+        return 31 if status == "done"
+        return 11
+      end
 
       def self.create(*options)
-        raise "debo romper"
-        options = options.first if options.is_a? Array
-
+        options   = options.first if options.is_a? Array
+        project   = jira_client.Project.find(options[:project_id])
         new_issue = jira_client.Issue.build
 
         begin
-          new_issue.save!( { fields: build_ticket_attributes(options) } )
-          new_issue.fetch
+          new_issue.save!( { fields: build_ticket_attributes_for_project(project, options) } )
         rescue JIRA::HTTPError => jira_error
           parsed_response = JSON.parse(jira_error.response.body) if jira_error.response.content_type.include?('application/json')
-          the_errors = parsed_response['errors']
-          msg = the_errors.values.join('/n')
+          msg = parsed_response['errors'].values.join('/n')
 
-          if msg.include? "'customfield_10004' cannot be set"
+          if msg.include?("'customfield_10004' cannot be set")
             msg = "We need Story Sizes to be enabled in JIRA to process these requests."
           end
 
           raise TaskMapper::Exception.new(msg)
         end
 
-        transitions = {}
-
-        update_status = options[:status] !=  "to_do"
-
-
-        if update_status
-
-          update_status = options[:status]
-          transition_id = nil
-
-          case update_status
-            when "in_progress"
-              transition_id = 21
-            when "done"
-              transition_id = 31
-            else
-              transition_id = 11
-          end
-          transitions[:id] = transition_id
-
-        end
-
-        if transitions.any?
+        if options[:status] !=  "to_do"
+          transition_options = { id: transition_number_for_status(options[:status]) }
           transition = new_issue.transitions.build
-          transition.save!("transition" => transitions)
-          new_issue.fetch
+          transition.save!(transition: transition_options)          
         end
-
-
+        
+        new_issue.fetch
         Ticket.new new_issue
       end
 
@@ -227,7 +223,7 @@ module TaskMapper::Provider
         fields = {}
         transitions = {}
 
-        meta = get_meta(client_issue.project.key)
+        meta = get_meta(client_issue.project)
 
         story_points_field = meta['story-story-points']
         epic_link_field = meta['epic-epic-link']
@@ -336,9 +332,10 @@ module TaskMapper::Provider
       end
 
 
-      def self.createmeta(project_id)
-        project = jira_client.Project.find(project_id)
-        project.createmeta
+      def self.createmeta(options)
+        options = options.with_indifferent_access
+        project = options[:project].presence || jira_client.Project.find(options[:project_id])
+        project.metadata
       end
 
       def comment(*options)
