@@ -121,7 +121,7 @@ module TaskMapper::Provider
           hash 
         end
 
-        json_created_issues = JSON.parse( jira_client.get("/rest/api/2/search?jql=" + CGI.escape("issue IN (#{issue_keys.join(',')})") ).body )
+        json_created_issues = JSON.parse( jira_client.get("/rest/api/2/search?maxResults=1000&jql=" + CGI.escape("issue IN (#{issue_keys.join(',')})") ).body )
         issues = json_created_issues["issues"].map{|json| jira_client.Issue.build(json) }
         issues.each { |issue| create_transition_for_issue(issue, issue_data[issue.key][:status]) }
 
