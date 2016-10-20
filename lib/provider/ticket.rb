@@ -114,25 +114,27 @@ module TaskMapper::Provider
       def self.bulk_create(attributes)
         response   = jira_client.post("/rest/api/2/issue/bulk", { issueUpdates: attributes.map{ |attribute| attribute[:data] } }.to_json)
         issue_keys = JSON.parse(response.body)["issues"].map{ |issue| issue["key"] }
-        json_created_issues = JSON.parse( jira_client.get("/rest/api/2/search?jql=" + CGI.escape("issue IN (#{issue_keys.join(',')})") ).body )
-        issues = json_created_issues["issues"].map{|json| jira_client.Issue.build(json) }
-        issues.each { |issue| create_transition_for_issue(issue) }
-
-        issue_card_ids = issue_keys.each_with_index.inject({}) do |hash, (issue_key, index)| 
-          hash[issue_key] = attributes[index][:card].id
-          hash
+        
+        issue_data = JSON.parse(response.body)["issues"].each_with_index.inject({}) do |hash, (issue, index)|
+          key = issue["key"]
+          hash[key] = { card_id: attributes[index][:card].id, status:  attributes[index][:status] }
+          hash 
         end
 
+        json_created_issues = JSON.parse( jira_client.get("/rest/api/2/search?jql=" + CGI.escape("issue IN (#{issue_keys.join(',')})") ).body )
+        issues = json_created_issues["issues"].map{|json| jira_client.Issue.build(json) }
+        issues.each { |issue| create_transition_for_issue(issue, issue_data[issue.key][:status]) }
+
         {
-          issue_card_ids: issue_card_ids,
+          issue_data: issue_data.with_indifferent_access,
           tickets: issues.map{ |issue| Ticket.new(issue) }
         }
                 
       end
 
-      def self.create_transition_for_issue(issue)
-        return unless issue.try(:status).try(:statusCategory).try(:[],"id").to_i != 2 #Issue status is different than TO DO
-        transition_options = { id: transition_number_for_status( issue.status.name.downcase.underscore.split.join("_") ) }
+      def self.create_transition_for_issue(issue, status)
+        return unless status.to_s != "to_do" 
+        transition_options = { id: transition_number_for_status(status.to_s) }
         transition = issue.transitions.build
         transition.save!(transition: transition_options)
       end
