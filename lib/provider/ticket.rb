@@ -117,7 +117,7 @@ module TaskMapper::Provider
         
         issue_data = JSON.parse(response.body)["issues"].each_with_index.inject({}) do |hash, (issue, index)|
           key = issue["key"]
-          hash[key] = { card_id: attributes[index][:card].id, status:  attributes[index][:status] }
+          hash[key] = { card_id: attributes[index].try(:[], :card).try(:id), status:  attributes[index].try(:[], :status) }
           hash 
         end
 
