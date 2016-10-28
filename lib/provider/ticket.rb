@@ -129,7 +129,10 @@ module TaskMapper::Provider
           issue_data: issue_data.with_indifferent_access,
           tickets: issues.map{ |issue| Ticket.new(issue) }
         }
-                
+      rescue JIRA::HTTPError => jira_error
+        parsed_response = JSON.parse(jira_error.response.body) if jira_error.response.content_type.include?('application/json')
+        msg = parsed_response['errors'].map{ |element| element.values.join('/n') }.join(" ")
+        raise TaskMapper::Exception.new(msg)
       end
 
       def self.create_transition_for_issue(issue, status)
