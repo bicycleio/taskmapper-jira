@@ -79,9 +79,9 @@ module TaskMapper::Provider
 
         fields[:description]       = description if client_field_changed?(:description)
         fields[:summary]           = title.strip if client_field_changed?(:title, :summary)
-        fields[epic_name_field]    = title.strip if is_epic?(self.issuetype) && client_field_changed?(:title, epic_name_field)
-        fields[epic_link_field]    = parent      if client_field_changed?(:parent, epic_link_field)
-        fields[story_points_field] = story_size.to_f.prettify if story_points_enabled? && client_field_changed?(:story_size, story_points_field)
+        fields[epic_name_field]    = title.strip if epic_name_field.present? && is_epic?(self.issuetype) && client_field_changed?(:title, epic_name_field)
+        fields[epic_link_field]    = parent      if epic_link_field.present? && client_field_changed?(:parent, epic_link_field)
+        fields[story_points_field] = story_size.to_f.prettify if story_points_field.present? && story_points_enabled? && client_field_changed?(:story_size, story_points_field)
 
         update_status = client_status = nil
         if self.key? :transition
@@ -208,7 +208,7 @@ module TaskMapper::Provider
         title = options[:title].to_s.strip
         fields[:description]    = options[:description].to_s if options.key?(:description)
         fields[:summary]        = title if options.key?(:title)
-        fields[epic_name_field] = title if is_epic?(type.name)
+        fields[epic_name_field] = title if epic_name_field.present? && is_epic?(type.name)
         fields[epic_link_field.to_sym]     = options[:parent] if epic_link_field.present? && options.key?(:parent)
         fields[story_points_field.to_sym]  = options[:story_size].to_f.prettify if story_points_enabled?(type.name, project) && story_points_field.present? && options.key?(:story_size)
         fields
@@ -302,7 +302,7 @@ module TaskMapper::Provider
 
           fields = object.attrs.fetch('fields')
 
-          epic_link = fields.fetch(epic_link_field) if fields.key?(epic_link_field)
+          epic_link = fields.fetch(epic_link_field) if epic_link_field.present? && fields.key?(epic_link_field)
 
           @description = object.description.to_s
 
