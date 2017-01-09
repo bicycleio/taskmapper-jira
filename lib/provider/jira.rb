@@ -7,22 +7,21 @@ module TaskMapper::Provider
   module JiraAccessor
 
     def jira_client
-      Thread.current['TaskMapper::Provider::JiraAccessor.jira']
+      Thread.current["TaskMapper::Provider::JiraAccessor.jira"]
     end
 
     def jira_client=(jira_client)
-      Thread.current['TaskMapper::Provider::JiraAccessor.jira'] = jira_client
+      Thread.current["TaskMapper::Provider::JiraAccessor.jira"] = jira_client
     end
 
-    def jira_project_metadata(project_id)
-      Thread.current['TaskMapper::Provider::JiraAccessor.jira_project_metadata.#{project_id}']
+    def jira_project_metadata(project)
+      Thread.current["TaskMapper::Provider::JiraAccessor.jira_project_metadata.#{project.key}-#{project.id}"]
     end
 
     def jira_project_metadata=(jira_project_metadata)
-      project_id = jira_project_metadata.project_id
-      Thread.current['TaskMapper::Provider::JiraAccessor.jira_project_metadata.#{project_id}'] = jira_project_metadata
+      project = jira_project_metadata.project
+      Thread.current["TaskMapper::Provider::JiraAccessor.jira_project_metadata.#{project.key}-#{project.id}"] = jira_project_metadata
     end
-
 
   end
 
@@ -67,11 +66,11 @@ module TaskMapper::Provider
 
     # Tad bit of a hack to get the inheritance down
     def jira_client
-      Thread.current['TaskMapper::Provider::JiraAccessor.jira']
+      Thread.current["TaskMapper::Provider::JiraAccessor.jira"]
     end
 
     def jira_client=(jira_client)
-      Thread.current['TaskMapper::Provider::JiraAccessor.jira'] = jira_client
+      Thread.current["TaskMapper::Provider::JiraAccessor.jira"] = jira_client
     end
 
     # declare needed overloaded methods here

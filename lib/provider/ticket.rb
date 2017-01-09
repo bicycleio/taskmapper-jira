@@ -29,11 +29,11 @@ module TaskMapper::Provider
       end
 
       def get_meta (project)
-        if self.class.jira_project_metadata(project.key).nil?
+        if self.class.jira_project_metadata(project).nil?
           meta = project.metadata
           self.class.jira_project_metadata = meta
         else
-          self.class.jira_project_metadata(project.key)
+          self.class.jira_project_metadata(project)
         end
       end
 
@@ -70,7 +70,6 @@ module TaskMapper::Provider
       def save
         fields = {}
         transitions = {}
-
         meta = get_meta(client_issue.project)
 
         story_points_field = meta['story-story-points'].try(:to_sym)
