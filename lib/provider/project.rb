@@ -11,11 +11,11 @@ module TaskMapper::Provider
       def initialize(*object)
         if object.first
           object = object.first
+
           unless object.is_a? Hash
             @system_data = {:client => object}
             hash = {:id => object.key,
                     :name => object.name,
-                    :description => object.description,
                     :updated_at => nil,
                     :created_at => nil}
           else
@@ -41,7 +41,6 @@ module TaskMapper::Provider
 
       def self.find_all
         jira_client.Project.all.map { |project|
-          project.fetch
           Project.new project
         }
       end
@@ -54,5 +53,3 @@ module TaskMapper::Provider
     end
   end
 end
-
-

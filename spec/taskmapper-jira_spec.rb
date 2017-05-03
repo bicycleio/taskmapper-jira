@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe "TaskMapper::Provider::Jira" do 
+describe "TaskMapper::Provider::Jira" do
   before(:each) do
     @url = "https://someurl:8090/myjira"
     @mockJira = double('JiraClient')
@@ -28,6 +28,6 @@ describe "TaskMapper::Provider::Jira" do
   end
 
   it "should validate authentication with the valid method" do
-    @tm.valid?.should be_true
+    @tm.valid?.should be true
   end
 end
