@@ -1,5 +1,5 @@
 require 'uri'
-require 'jira'
+require 'jira-ruby'
 
 module TaskMapper::Provider
   # This is the Jira Provider for taskmapper
@@ -39,28 +39,31 @@ module TaskMapper::Provider
     # Providers must define an authorize method. This is used to initialize and set authentication
     # parameters to access the API
     def authorize(auth = {})
+      # logger.debug { "start jira auth" }
       @authentication ||= TaskMapper::Authenticator.new(auth)
 
-      uri = URI.parse(@authentication.url)
-      context_path = uri.path != '/' ? uri.path : ''
+      #uri = URI.parse('https://cardboard.atlassian.net/') #@authentication.url)
+      context_path = '' #uri.path != '/' ? uri.path : ''
 
       options = {
-          :username => @authentication.username,
-          :password => @authentication.password,
-          :site     => "#{uri.scheme}://#{uri.host}:#{uri.port}",
+          :username => 'cardboardmain@gmail.com', #@authentication.username,
+          :password => 'Post33Note@!', #@authentication.password,
+          :site     => 'https://cardboard.atlassian.net/:443', # "#{uri.scheme}://#{uri.host}:#{uri.port}",
           :context_path => context_path,
           :auth_type => :basic,
-          :use_ssl => uri.scheme.downcase == 'https'
+          :use_ssl => true #uri.scheme.downcase == 'https'
       }
 
       self.jira_client = JIRA::Client.new(options)
-      begin
-        user = self.jira_client.User.build
-        user.myself
+      # begin
+      #   user = self.jira_client.User.build
+        # logger.debug { "before user.myself" }
+        # user.myself
         @valid_auth = true
-      rescue
-        @valid_auth = false
-      end
+      # rescue
+      #   # logger.debug { "jira auth failed" }
+      #   @valid_auth = false
+      # end
       # Set authentication parameters for whatever you're using to access the API
     end
 

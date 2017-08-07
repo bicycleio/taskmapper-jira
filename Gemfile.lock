@@ -1,14 +1,14 @@
 GIT
-  remote: https://github.com/DevJams/jira-ruby.git
-  revision: 32fc941cfaba82e2e4f665bafdfcd9b5da07fbd0
+  remote: https://github.com/cardboardit/jira-ruby.git
+  revision: eb8b5829b6ef1ef3b41c660597cfa86ae1acf5a0
   specs:
-    jira-ruby (0.1.19)
+    jira-ruby (0.1.22)
       activesupport
       oauth (~> 0.4.7)
 
 GIT
-  remote: https://github.com/DevJams/taskmapper.git
-  revision: c8d28398bf57b2c63f4dba909b99507a0d0bf8a4
+  remote: https://github.com/cardboardit/taskmapper.git
+  revision: 2db96e703fb37c476b45f98f4517844293d0af0e
   specs:
     taskmapper (1.0.2.1)
       activeresource (~> 4.0)
@@ -18,28 +18,26 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
-    activemodel (4.2.5)
-      activesupport (= 4.2.5)
+    activemodel (4.2.9)
+      activesupport (= 4.2.9)
       builder (~> 3.1)
-    activeresource (4.0.0)
+    activeresource (4.1.0)
       activemodel (~> 4.0)
       activesupport (~> 4.0)
-      rails-observers (~> 0.1.1)
-    activesupport (4.2.5)
+      rails-observers (~> 0.1.2)
+    activesupport (4.2.9)
       i18n (~> 0.7)
-      json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    builder (3.2.2)
+    builder (3.2.3)
     diff-lcs (1.2.5)
-    hashie (3.4.3)
-    i18n (0.7.0)
-    json (1.8.3)
-    minitest (5.8.3)
+    hashie (3.5.5)
+    i18n (0.8.4)
+    minitest (5.10.2)
     oauth (0.4.7)
-    rails-observers (0.1.2)
-      activemodel (~> 4.0)
+    rails-observers (0.1.4)
+      activemodel (>= 4.0)
     rake (10.4.2)
     rspec (3.4.0)
       rspec-core (~> 3.4.0)
@@ -54,8 +52,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.4.0)
     rspec-support (3.4.1)
-    thread_safe (0.3.5)
-    tzinfo (1.2.2)
+    thread_safe (0.3.6)
+    tzinfo (1.2.3)
       thread_safe (~> 0.1)
 
 PLATFORMS
@@ -68,4 +66,4 @@ DEPENDENCIES
   taskmapper!
 
 BUNDLED WITH
-   1.10.6
+   1.15.1

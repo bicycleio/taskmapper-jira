@@ -30,7 +30,13 @@ module TaskMapper::Provider
 
       def get_meta (project)
         if self.class.jira_project_metadata(project).nil?
-          meta = project.metadata
+          # meta = project.metadata
+          meta = {
+          'story-story-points': 99,
+          'epic-story-points': 98,
+          'epic-epic-link': "",
+          'epic-epic-name': "hello"
+        }
           self.class.jira_project_metadata = meta
         else
           self.class.jira_project_metadata(project)
@@ -187,7 +193,13 @@ module TaskMapper::Provider
 
       def self.build_ticket_attributes_for_project(project, options)
         issuetypes         = project.issuetypes
-        meta               = project.metadata
+        # meta               = project.metadata
+        meta = {
+          'story-story-points': 99,
+          'epic-story-points': 98,
+          'epic-epic-link': "",
+          'epic-epic-name': "hello"
+        }
         story_points_field = meta['story-story-points']
         epic_link_field    = meta['epic-epic-link']
         epic_name_field    = meta['epic-epic-name'].try(:to_sym)
@@ -261,7 +273,13 @@ module TaskMapper::Provider
       def self.createmeta(options)
         options = options.with_indifferent_access
         project = options[:project].presence || jira_client.Project.find(options[:project_id])
-        project.metadata
+        # project.metadata
+        {
+          'story-story-points': 99,
+          'epic-story-points': 98,
+          'epic-epic-link': "",
+          'epic-epic-name': "hello"
+        }
       end
 
       def self.is_epic?(string)
@@ -270,7 +288,14 @@ module TaskMapper::Provider
 
       def self.story_points_enabled?(issuetype, project)
         key = is_epic?(issuetype) ? 'epic-story-points' : 'story-story-points'
-        project.metadata[key].present?
+        # project.metadata[key].present?
+        thingie = {
+          'story-story-points': 99,
+          'epic-story-points': 98,
+          'epic-epic-link': "",
+          'epic-epic-name': "hello"
+        }
+        thingie[key].present?
       end
 
       private
